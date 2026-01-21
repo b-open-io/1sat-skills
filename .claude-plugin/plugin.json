@@ -1,6 +1,6 @@
 {
   "name": "1sat-skills",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "1Sat Ordinals NFT operations for BSV blockchain - extract media from transactions, mint ordinals, and browse marketplace.",
   "author": {
     "name": "b-open-io",

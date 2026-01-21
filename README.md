@@ -1,48 +1,52 @@
 # 1Sat Skills
 
-1Sat Ordinals NFT operations plugin for Claude Code.
+1Sat Ordinals operations for Claude Code. NFT minting, media extraction, and marketplace browsing.
+
+## Installation
+
+```bash
+skills add b-open-io/1sat-skills
+```
 
 ## Skills
 
-### Media Extraction
-- **extract-blockchain-media** - Extract media files from BSV blockchain transactions using txex CLI
-
-### NFT Operations
-- **wallet-create-ordinals** - Mint new ordinals/NFTs on BSV blockchain
-- **ordinals-marketplace** - Browse and search 1Sat Ordinals marketplace
+| Skill | Description |
+|-------|-------------|
+| `extract-blockchain-media` | Extract media files from blockchain transactions using txex |
+| `wallet-create-ordinals` | Mint new ordinals/inscriptions on BSV |
+| `ordinals-marketplace` | Browse and search GorillaPool marketplace |
 
 ## Prerequisites
 
-### CLI Tools
+**CLI Tools**
 
 ```bash
 # Install txex globally for media extraction
 bun add -g txex
 ```
 
-### Packages
-
-- `js-1sat-ord` - 1Sat Ordinals SDK
-- `@bsv/sdk` - BSV blockchain SDK
-
-## Installation
+**Packages**
 
 ```bash
-/plugin marketplace add https://github.com/b-open-io/1sat-skills
-/plugin install 1sat-skills
+bun add js-1sat-ord @bsv/sdk
 ```
 
-## Usage
+Note: `js-1sat-ord` is being migrated to `@1sat/sdk` (in progress).
 
-Skills are automatically available after installation. Claude will use them when appropriate for 1Sat Ordinals operations.
+## Related
+
+- **@1sat/wallet-toolbox** - BRC-100 wallet with ordinals support
+- **bsv-skills** - Core BSV wallet and transaction skills
+- **1Sat Ordinals Docs**: https://docs.1satordinals.com/
+- **GorillaPool Marketplace**: https://ordinals.gorillapool.io
 
 ## What are 1Sat Ordinals?
 
-1Sat Ordinals are NFTs and inscriptions on the BSV blockchain:
-- Store arbitrary data on-chain (images, text, files)
+NFTs and inscriptions on BSV:
+- Arbitrary data stored on-chain (images, text, files)
 - Unique satoshi-level identification
-- Marketplace for trading
-- Permanent and immutable storage
+- Permanent, immutable storage
+- Active marketplace for trading
 
 ## License
 
