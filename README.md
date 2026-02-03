@@ -5,7 +5,9 @@
 ## Installation
 
 ```bash
-skills add b-open-io/1sat-skills
+bunx skills add b-open-io/1sat-skills --skill extract-blockchain-media
+bunx skills add b-open-io/1sat-skills --skill wallet-create-ordinals
+bunx skills add b-open-io/1sat-skills --skill ordinals-marketplace
 ```
 
 ## Skills
