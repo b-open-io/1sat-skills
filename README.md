@@ -1,3 +1,5 @@
+![1Sat Skills](assets/banner.png)
+
 # 1Sat Skills
 
 1Sat ecosystem tools for Claude Code. Unified BSV indexing API, ordinals NFT operations, media extraction, and marketplace browsing.
