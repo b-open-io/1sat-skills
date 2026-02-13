@@ -1,29 +1,67 @@
 #!/usr/bin/env bun
 
-async function searchInscriptions(query: string): Promise<void> {
-  const apiUrl = `https://ordinals.gorillapool.io/api/inscriptions/search?q=${encodeURIComponent(query)}`;
+import { IndexerClient } from '@1sat/client'
+import { ONESAT_MAINNET_URL } from '@1sat/types'
 
+async function searchInscriptions(query: string): Promise<void> {
   console.log(`Searching 1Sat Ordinals for: "${query}"\n`);
 
   try {
-    const response = await fetch(apiUrl);
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.statusText}`);
-    }
+    const indexer = new IndexerClient(ONESAT_MAINNET_URL)
 
-    const results = await response.json();
+    // Search using the indexer client
+    const results = await indexer.inscriptions({
+      search: query,
+      limit: 20,
+      orderBy: 'createdAt',
+      orderDirection: 'desc'
+    })
 
     console.log("🔍 Search Results\n");
 
-    if (Array.isArray(results) && results.length === 0) {
+    if (!results || results.length === 0) {
       console.log("No inscriptions found.");
       return;
     }
 
-    console.log(JSON.stringify(results, null, 2));
+    // Display results
+    results.forEach((inscription: any, index: number) => {
+      console.log(`📄 ${index + 1}. Inscription ${inscription.id}`)
+      console.log(`   Type: ${inscription.contentType}`)
+      console.log(`   Size: ${inscription.contentLength} bytes`)
+      console.log(`   Created: ${new Date(inscription.createdAt).toLocaleDateString()}`)
+      if (inscription.collection) {
+        console.log(`   Collection: ${inscription.collection}`)
+      }
+      console.log(`   View: https://ordinals.gorillapool.io/inscription/${inscription.id}`)
+      console.log('')
+    })
+
+    console.log(`Total results: ${results.length}`)
 
   } catch (error: any) {
-    throw new Error(`Search failed: ${error.message}`);
+    // Fallback to direct API if client fails
+    console.log("Falling back to direct API...")
+    const apiUrl = `https://ordinals.gorillapool.io/api/inscriptions/search?q=${encodeURIComponent(query)}`;
+
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.statusText}`);
+      }
+
+      const results = await response.json();
+
+      if (Array.isArray(results) && results.length === 0) {
+        console.log("No inscriptions found.");
+        return;
+      }
+
+      console.log(JSON.stringify(results, null, 2));
+
+    } catch (fallbackError: any) {
+      throw new Error(`Search failed: ${fallbackError.message}`);
+    }
   }
 }
 
@@ -34,6 +72,7 @@ if (args.length === 0) {
   console.error("Examples:");
   console.error("  bun run search.ts 'pixel art'");
   console.error("  bun run search.ts 'collection-name'");
+  console.error("  bun run search.ts 'pepe'");
   process.exit(1);
 }
 

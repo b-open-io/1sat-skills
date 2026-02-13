@@ -1,6 +1,6 @@
 # 1Sat Skills
 
-1Sat Ordinals operations for Claude Code. NFT minting, media extraction, and marketplace browsing.
+1Sat ecosystem tools for Claude Code. Unified BSV indexing API, ordinals NFT operations, media extraction, and marketplace browsing.
 
 ## Installation
 
@@ -32,16 +32,25 @@ bun add -g txex
 **Packages**
 
 ```bash
-bun add js-1sat-ord @bsv/sdk
+# For ordinals operations
+bun add @1sat/core @1sat/client @1sat/types @bsv/sdk
+
+# For browser dApps (optional)
+bun add @1sat/connect
+
+# For React apps (optional)
+bun add @1sat/react
 ```
 
-Note: `js-1sat-ord` is being migrated to `@1sat/sdk` (in progress).
+Note: The old `js-1sat-ord` package has been replaced by the `@1sat/sdk` monorepo packages.
 
 ## Related
 
-- **@1sat/wallet-toolbox** - BRC-100 wallet with ordinals support
+- **@1sat/sdk** - Official 1Sat SDK monorepo with all packages
+- **@1sat/wallet** - BRC-100 wallet engine with ordinals support
 - **bsv-skills** - Core BSV wallet and transaction skills
 - **1Sat Ordinals Docs**: https://docs.1satordinals.com/
+- **1sat.market**: https://1sat.market - Ordinals marketplace and wallet
 - **GorillaPool Marketplace**: https://ordinals.gorillapool.io
 
 ## What are 1Sat Ordinals?
