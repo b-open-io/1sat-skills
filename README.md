@@ -5,6 +5,7 @@
 ## Installation
 
 ```bash
+bunx skills add b-open-io/1sat-skills --skill 1sat-stack
 bunx skills add b-open-io/1sat-skills --skill extract-blockchain-media
 bunx skills add b-open-io/1sat-skills --skill wallet-create-ordinals
 bunx skills add b-open-io/1sat-skills --skill ordinals-marketplace
@@ -14,6 +15,7 @@ bunx skills add b-open-io/1sat-skills --skill ordinals-marketplace
 
 | Skill | Description |
 |-------|-------------|
+| `1sat-stack` | Unified BSV indexing API - replaces all other indexers |
 | `extract-blockchain-media` | Extract media files from blockchain transactions using txex |
 | `wallet-create-ordinals` | Mint new ordinals/inscriptions on BSV |
 | `ordinals-marketplace` | Browse and search GorillaPool marketplace |
