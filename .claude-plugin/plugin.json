@@ -1,13 +1,11 @@
 {
   "name": "1sat-skills",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "1Sat ecosystem tools for BSV - unified indexing API (1sat-stack), ordinals NFT operations, media extraction, and marketplace browsing.",
   "author": {
     "name": "b-open-io",
     "url": "https://github.com/b-open-io"
   },
   "repository": "https://github.com/b-open-io/1sat-skills",
-  "keywords": ["bsv", "ordinals", "nft", "1sat", "blockchain", "marketplace"],
-  "skills": "./skills",
-  "agents": "./agents"
+  "keywords": ["bsv", "ordinals", "nft", "1sat", "blockchain", "marketplace"]
 }
