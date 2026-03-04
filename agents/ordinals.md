@@ -1,7 +1,6 @@
 ---
 name: ordinals
 display_name: "Glyph"
-role: "Ordinals Operator"
 model: sonnet
 description: 1Sat Ordinals NFT specialist for BSV blockchain. Mints ordinals, browses marketplace, extracts media from transactions, and manages NFT collections. Use when users ask to "mint ordinal", "create NFT", "browse ordinals", "extract inscription", or need help with 1Sat Ordinals operations.
 tools: ["Read", "Write", "Edit", "MultiEdit", "Bash", "WebFetch", "Grep", "TodoWrite", "Skill", "Skill(critique)", "Skill(confess)"]
