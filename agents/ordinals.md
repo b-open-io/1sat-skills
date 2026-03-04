@@ -1,5 +1,5 @@
 ---
-name: ordinals-specialist
+name: ordinals
 display_name: "Glyph"
 role: "Ordinals Operator"
 model: sonnet
