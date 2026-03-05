@@ -1,7 +1,7 @@
 ---
 name: 1sat-stack
 description: "This skill should be used when working with the 1sat-stack unified BSV indexing API — whenever an agent needs to fetch UTXOs, look up inscriptions or ordinals, get BSV21 token balances, access ORDFS on-chain content, broadcast transactions, look up BAP identities, or stream real-time BSV events. Use this when replacing WhatsOnChain, GorillaPool ordinals API, or other separate BSV indexers. Also use when the user asks about 'api.1sat.app', 'unified BSV indexer', 'BSV21 token lookup', 'ORDFS content', 'overlay engine', or 'broadcasting BEEF transactions'."
-version: 1.0.0
+version: 1.0.1
 ---
 
 # 1sat-stack
@@ -23,7 +23,7 @@ All endpoints are prefixed with `/1sat` on the hosted instance.
 ```
 GET  /txo/{outpoint}              Get a specific output (e.g., txid.0)
 GET  /txo/tx/{txid}               All outputs for a transaction
-POST /txo/search                  Search outputs with filters (tags, owner, type)
+GET  /txo/search                  Search outputs by key(s) via query params
 POST /txo/outpoints               Bulk fetch multiple outpoints
 POST /txo/spends                  Check spend status of outpoints
 GET  /txo/{outpoint}/spend        Get spending txid for an output
@@ -32,9 +32,12 @@ GET  /txo/{outpoint}/spend        Get spending txid for an output
 ### Owner (Address) Queries
 
 ```
-GET  /owner/{address}/txos        All unspent outputs for an address
-GET  /owner/{address}/balance     Satoshi balance for an address
+GET  /owner/{owner}/txos          Stream unspent outputs via SSE (see pattern below)
+GET  /owner/{owner}/balance       Satoshi balance for an owner
+GET  /owner/sync                  Multi-owner sync via SSE (query: ?owner=addr1&owner=addr2)
 ```
+
+`/owner/{owner}/txos` is an **SSE endpoint** — it streams sync progress, then individual TXO events, then a done event. Use `EventSource` or read the stream manually (see pattern below).
 
 Use `owner` endpoints as the primary way to fetch UTXOs before building transactions.
 
@@ -60,11 +63,17 @@ GET  /arcade/events/{token}       SSE stream of broadcast status updates
 
 ```
 GET  /bsv21/{tokenId}                                        Token details
-GET  /bsv21/{tokenId}/outputs                                All token outputs
+POST /bsv21/{tokenId}/outputs                                Validate outpoints in token topic (body: string[])
+GET  /bsv21/{tokenId}/outputs/{outpoint}                     Validate single outpoint in token topic
 GET  /bsv21/{tokenId}/{lockType}/{address}/balance           Token balance for address
 GET  /bsv21/{tokenId}/{lockType}/{address}/unspent           Unspent token UTXOs
 GET  /bsv21/{tokenId}/{lockType}/{address}/history           Token history for address
-GET  /bsv21/lookup                                           Discover tokens by ticker
+POST /bsv21/lookup                                           Bulk lookup tokens by ID array (body: string[], max 100)
+GET  /bsv21/{tokenId}/blk/{height}                           Block data for token at height
+GET  /bsv21/{tokenId}/tx/{txid}                              Transaction details for token (inputs + outputs)
+POST /bsv21/{tokenId}/{lockType}/balance                     Multi-address balance (body: string[], max 100)
+POST /bsv21/{tokenId}/{lockType}/history                     Multi-address history (body: string[], max 100)
+POST /bsv21/{tokenId}/{lockType}/unspent                     Multi-address unspent (body: string[], max 100)
 ```
 
 `lockType` is typically `p2pkh`.
@@ -100,6 +109,28 @@ GET  /chaintracks/tip             Latest block header
 GET  /health                      Server health check
 ```
 
+### OpNS (On-chain Naming)
+
+```
+GET  /opns/mine/{name}            Get mining status for a domain name
+```
+
+### BSocial (Social Posts)
+
+```
+GET  /bsocial/post/search         Full-text search posts (?q=query&limit=20&offset=0)
+```
+
+### Paymail (BSV Alias Protocol)
+
+```
+GET  /.well-known/bsvalias                          Capability discovery document
+GET  /v1/bsvalias/id/{paymail}                      PKI — get public key for paymail address
+POST /v1/bsvalias/p2p-payment-destination/{paymail} Get P2P payment destination (BRC-29)
+POST /v1/bsvalias/receive-beef/{paymail}             Receive BEEF payment
+POST /v1/bsvalias/receive-transaction/{paymail}      Receive raw transaction payment
+```
+
 ### Overlay Engine (Advanced)
 
 ```
@@ -113,12 +144,17 @@ GET  /overlay/listLookupServiceProviders  List active lookup services
 
 ## Common Patterns
 
-### Fetch UTXOs to Build a Transaction
+### Fetch UTXOs to Build a Transaction (SSE)
 
 ```typescript
-const res = await fetch('https://api.1sat.app/1sat/owner/1A1zP1.../txos');
-const utxos = await res.json();
-// utxos: array of {outpoint, satoshis, data, score, ...}
+const es = new EventSource('https://api.1sat.app/1sat/owner/1A1zP1.../txos?tags=*');
+const utxos: any[] = [];
+es.addEventListener('txo', (e) => utxos.push(JSON.parse(e.data)));
+es.addEventListener('done', () => {
+  es.close();
+  // utxos: array of {outpoint, satoshis, data, score, ...}
+});
+es.addEventListener('error', () => es.close());
 ```
 
 ### Broadcast a Transaction
@@ -144,19 +180,19 @@ const res = await fetch(
 const { balance } = await res.json();
 ```
 
-### Search for Inscriptions by Owner
+### Search for Outputs by Key
 
 ```typescript
-const res = await fetch('https://api.1sat.app/1sat/txo/search', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    owner: '1A1zP1...',
-    tag: 'inscription',
-    limit: 100
-  })
+// Search uses GET with query params. Keys use prefixes: "ev:" for events, "tp:" for topics.
+// Without prefix, "ev:" is assumed. Use "own:" prefix for owner lookups.
+const params = new URLSearchParams({
+  key: 'own:1A1zP1...',
+  unspent: 'true',
+  tags: 'inscription',
+  limit: '100'
 });
-const inscriptions = await res.json();
+const res = await fetch(`https://api.1sat.app/1sat/txo/search?${params}`);
+const outputs = await res.json();
 ```
 
 ---

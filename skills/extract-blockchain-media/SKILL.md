@@ -1,62 +1,77 @@
 ---
 name: extract-blockchain-media
-description: Extract media files (images, videos, documents) from BSV blockchain transactions using the txex CLI tool. Retrieves inscribed ordinals and embedded files.
+description: "This skill should be used when extracting media files from BSV blockchain transactions — downloading inscribed ordinals, retrieving on-chain images/videos/files, or accessing ORDFS content. Triggers on 'extract inscription', 'download ordinal', 'get on-chain file', 'ORDFS content', 'txex', 'blockchain media', or 'inscribed content'. Uses txex CLI for raw extraction, ORDFS gateway for HTTP access."
 allowed-tools: "Bash(bun:*)"
 ---
 
 # Extract Blockchain Media
 
-Extract media files from BSV blockchain transactions using `txex` CLI.
+Extract media files from BSV blockchain transactions using `txex` CLI or access them via the ORDFS gateway.
 
-## When to Use
+## Two Approaches
 
-- Extract ordinal inscriptions from transactions
-- Retrieve embedded images/videos/files from blockchain
-- Download NFT assets
-- Access on-chain stored media
+| Method | Best For | How |
+|--------|----------|-----|
+| **txex CLI** | Raw extraction, offline archival, batch processing | `txex <txid>` — downloads files to disk |
+| **ORDFS Gateway** | HTTP access, embedding in apps, streaming | `https://ordfs.network/<outpoint>` or `https://api.1sat.app/1sat/content/<path>` |
 
-## Usage
+## txex CLI
 
 ```bash
-# Extract media from transaction ID
-bun run /path/to/skills/extract-blockchain-media/scripts/extract.ts <txid>
+# Install
+bun add -g txex
+
+# Extract all media from a transaction
+txex <txid>
 
 # Extract to specific output directory
-bun run /path/to/skills/extract-blockchain-media/scripts/extract.ts <txid> /path/to/output
+txex <txid> -o /path/to/output
 ```
 
-## What Gets Extracted
-
-The txex tool extracts:
-- Images (PNG, JPG, GIF, WEBP)
-- Videos (MP4, WEBM)
-- Audio files
-- Text/JSON data
-- Any binary data inscribed in transaction
-
-## Output
-
-Files are saved with:
-- Original filename (if embedded in tx)
-- Auto-detected file extension
-- Saved to current directory or specified path
-
-## Requirements
-
-- `txex` CLI installed: `bun add -g txex`
-- Transaction ID of ordinal/inscription
-- Internet connection to fetch from blockchain
-
-## CLI Reference
+### Using the Skill Script
 
 ```bash
-txex <txid>                 # Extract to current directory
-txex <txid> -o /path        # Extract to specific path
+bun run /path/to/skills/extract-blockchain-media/scripts/extract.ts <txid> [output-dir]
 ```
+
+### What Gets Extracted
+
+- Images (PNG, JPG, GIF, WEBP)
+- Videos (MP4, WEBM)
+- Audio files (MP3, WAV, OGG)
+- Text/JSON/Markdown data
+- Any binary data inscribed in the transaction
+
+Files are saved with auto-detected extensions based on content type.
+
+## ORDFS Gateway (HTTP Access)
+
+For programmatic or browser access, use the ORDFS gateway instead of extracting to disk:
+
+```typescript
+// By outpoint (txid_vout)
+const url = 'https://ordfs.network/abc123...def456_0'
+
+// Via 1sat-stack
+const url = 'https://api.1sat.app/1sat/content/abc123...def456_0'
+
+// Stream content
+const url = 'https://api.1sat.app/1sat/ordfs/stream/abc123...def456_0'
+
+// Get metadata only
+const url = 'https://api.1sat.app/1sat/ordfs/metadata/abc123...def456_0'
+
+const res = await fetch(url)
+const contentType = res.headers.get('content-type') // e.g., 'image/png'
+const data = await res.arrayBuffer()
+```
+
+ORDFS serves content with correct `Content-Type` headers, making it suitable for `<img>`, `<video>`, and `<audio>` tags directly.
 
 ## Common Use Cases
 
-1. **View NFT Images**: Extract ordinal inscription image
-2. **Download Files**: Retrieve documents stored on-chain
-3. **Archive Media**: Backup ordinals locally
-4. **Content Verification**: Check what's actually inscribed
+1. **View NFT Images**: Extract or fetch ordinal inscription content
+2. **Embed in Apps**: Use ORDFS URLs in `<img src="...">` tags
+3. **Archive Media**: Batch extract ordinals locally with txex
+4. **Content Verification**: Check what's actually inscribed on-chain
+5. **Collection Export**: Extract all inscriptions from a set of txids

@@ -34,7 +34,7 @@ import { inscribe, createContext } from '@1sat/actions'
 import { OneSatWallet } from '@1sat/wallet'
 
 // Set up context with BRC-100 wallet
-const ctx = createContext({ wallet, chain: 'main' })
+const ctx = createContext(wallet, { chain: 'main' })
 
 // Inscribe a file
 const result = await inscribe.execute(ctx, {
@@ -77,8 +77,11 @@ const result = await deployBsv21Token({
   utxos: paymentUtxos,
   initialDistribution: {
     address: ownerAddress,
-    amt: 21000000n
-  }
+    tokens: 21_000_000,
+  },
+  destinationAddress: ownerAddress,
+  paymentPk: paymentPrivateKey,
+  changeAddress: changeAddress,
 })
 ```
 
@@ -93,7 +96,7 @@ const result = await deployBsv21Token({
 
 Inscription cost depends on file size:
 - Stored on-chain permanently
-- ~50 sats per byte typical
+- Fee rate is configurable via `satsPerKb` (default varies)
 - Larger files = higher cost
 
 ## Output

@@ -1,75 +1,57 @@
 #!/usr/bin/env bun
 
-import { IndexerClient } from '@1sat/client'
-import { ONESAT_MAINNET_URL } from '@1sat/types'
+const API_BASE = 'https://api.1sat.app/1sat'
 
-async function getListings(limit: number = 20): Promise<void> {
-  console.log(`Fetching ${limit} active marketplace listings...\n`);
+async function getListings(address: string): Promise<void> {
+  console.log(`Fetching listed ordinals for: ${address}\n`)
 
-  try {
-    const indexer = new IndexerClient(ONESAT_MAINNET_URL)
+  const response = await fetch(`${API_BASE}/owner/${address}/txos`)
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.statusText}`)
+  }
 
-    // Fetch active marketplace listings
-    const listings = await indexer.marketListings({
-      status: 'active',
-      limit,
-      orderBy: 'createdAt',
-      orderDirection: 'desc'
-    })
+  const results = await response.json()
 
-    console.log("🏪 Active Marketplace Listings\n");
+  if (!Array.isArray(results) || results.length === 0) {
+    console.log('No ordinals found for this address.')
+    return
+  }
 
-    if (!listings || listings.length === 0) {
-      console.log("No active listings found.");
-      return;
+  // Filter to listed ordinals (have ordlock data)
+  const listings = results.filter((t: any) => t.data?.ordlock)
+
+  if (listings.length === 0) {
+    console.log('No active listings found.')
+    return
+  }
+
+  console.log(`Active Listings (${listings.length}):\n`)
+
+  for (const [i, listing] of listings.entries()) {
+    const price = listing.data.ordlock.price
+    console.log(`${i + 1}. ${listing.outpoint}`)
+    console.log(`   Price: ${price} sats (${(price / 1e8).toFixed(8)} BSV)`)
+    if (listing.data?.inscription?.contentType) {
+      console.log(`   Type: ${listing.data.inscription.contentType}`)
     }
-
-    // Display listings with formatted output
-    listings.forEach((listing: any, index: number) => {
-      const priceInBSV = (listing.price / 100_000_000).toFixed(8)
-      console.log(`${index + 1}. Inscription: ${listing.inscriptionId}`)
-      console.log(`   Price: ${listing.price} sats (${priceInBSV} BSV)`)
-      console.log(`   Listed: ${new Date(listing.createdAt).toLocaleDateString()}`)
-      if (listing.contentType) {
-        console.log(`   Type: ${listing.contentType}`)
-      }
-      console.log(`   View: https://ordinals.gorillapool.io/inscription/${listing.inscriptionId}`)
-      console.log('')
-    })
-
-  } catch (error: any) {
-    // Fallback to direct API
-    console.log("Using direct API...")
-    const apiUrl = `https://ordinals.gorillapool.io/api/market/listings?limit=${limit}`;
-
-    try {
-      const response = await fetch(apiUrl);
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`);
-      }
-
-      const listings = await response.json();
-      console.log(JSON.stringify(listings, null, 2));
-
-    } catch (fallbackError: any) {
-      throw new Error(`Failed to fetch listings: ${fallbackError.message}`);
+    if (listing.data?.map?.name) {
+      console.log(`   Name: ${listing.data.map.name}`)
     }
+    console.log(`   View: ${API_BASE}/content/${listing.outpoint}`)
+    console.log('')
   }
 }
 
-const args = process.argv.slice(2);
-const limit = args[0] ? parseInt(args[0]) : 20;
-
-if (isNaN(limit) || limit < 1 || limit > 100) {
-  console.error("Usage: bun run listings.ts [limit]");
-  console.error("");
-  console.error("Examples:");
-  console.error("  bun run listings.ts      # Default 20 listings");
-  console.error("  bun run listings.ts 50   # Show 50 listings");
-  process.exit(1);
+const args = process.argv.slice(2)
+if (args.length === 0) {
+  console.error('Usage: bun run listings.ts <owner-address>')
+  console.error('')
+  console.error('Examples:')
+  console.error("  bun run listings.ts '1Address...'")
+  process.exit(1)
 }
 
-getListings(limit).catch(e => {
-  console.error("❌ Error:", e.message);
-  process.exit(1);
-});
+getListings(args[0]).catch((e) => {
+  console.error('Error:', e.message)
+  process.exit(1)
+})

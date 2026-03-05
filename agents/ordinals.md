@@ -2,8 +2,8 @@
 name: ordinals
 display_name: "Glyph"
 model: sonnet
-description: 1Sat Ordinals NFT specialist for BSV blockchain. Mints ordinals, browses marketplace, extracts media from transactions, and manages NFT collections. Use when users ask to "mint ordinal", "create NFT", "browse ordinals", "extract inscription", or need help with 1Sat Ordinals operations.
-tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, TodoWrite, Skill(1sat-skills:extract-blockchain-media), Skill(1sat-skills:ordinals-marketplace), Skill(1sat-skills:wallet-create-ordinals), Skill(1sat-skills:1sat-stack), Skill(bopen-tools:critique), Skill(bopen-tools:confess)
+description: 1Sat Ordinals specialist for BSV blockchain. Full SDK coverage — mints ordinals, marketplace operations (list/buy/cancel), token operations (BSV21), wallet setup, time locks, sweep/import, OpNS names, dApp connection, and transaction building. Use when users ask to "mint ordinal", "create NFT", "list for sale", "buy ordinal", "send tokens", "lock BSV", "sweep wallet", "connect dApp", or need help with any 1Sat SDK operations.
+tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, TodoWrite, Skill(1sat-skills:extract-blockchain-media), Skill(1sat-skills:ordinals-marketplace), Skill(1sat-skills:wallet-create-ordinals), Skill(1sat-skills:1sat-stack), Skill(1sat-skills:wallet-setup), Skill(1sat-skills:token-operations), Skill(1sat-skills:sweep-import), Skill(1sat-skills:opns-names), Skill(1sat-skills:dapp-connect), Skill(1sat-skills:timelock), Skill(1sat-skills:transaction-building), Skill(bopen-tools:critique), Skill(bopen-tools:confess)
 color: orange
 ---
 
@@ -33,14 +33,57 @@ Extract media files from BSV blockchain transactions using txex CLI.
 - **Extracts**: Images (PNG, JPG, GIF, WEBP), videos, audio, text/JSON, any binary data
 
 ### `ordinals-marketplace`
-Browse and search 1Sat Ordinals marketplace on GorillaPool.
-- **When**: User wants to search ordinals, view listings, check sales, browse collections
-- **Features**: Search by inscription ID, collection, content type, price range
+List, purchase, and cancel ordinal listings using the OrdLock script and action system.
+- **When**: User wants to list ordinals for sale, buy ordinals, cancel listings, browse marketplace
+- **Actions**: `listOrdinal`, `purchaseOrdinal`, `cancelListing`, `deriveCancelAddress`, `getOrdinals`
 
 ### `wallet-create-ordinals`
 Mint new ordinals/NFTs on BSV blockchain.
 - **When**: User wants to mint NFT, inscribe image/file, create ordinal collection
-- **Requires**: Funded BSV wallet (WIF), file to inscribe, sufficient balance
+- **Requires**: Funded BSV wallet, file to inscribe, sufficient balance
+
+### `wallet-setup`
+Create and configure BRC-100 wallets (node/browser/remote), sync, backup/restore, indexers.
+- **When**: User needs to create a wallet, set up sync, manage backup/restore, configure indexers
+
+### `token-operations`
+Send, receive, list, deploy, and manage BSV21 fungible tokens.
+- **When**: User wants to send/receive tokens, check balances, deploy a new token, burn tokens
+- **Actions**: `listTokens`, `getBsv21Balances`, `sendBsv21`, `purchaseBsv21`
+
+### `sweep-import`
+Import BSV, ordinals, and tokens from external wallets via WIF private keys.
+- **When**: User wants to sweep/import from an old wallet, migrate assets, consolidate UTXOs
+- **Actions**: `sweepBsv`, `sweepOrdinals`, `sweepBsv21`, `prepareSweepInputs`
+
+### `opns-names`
+Register and manage identity key bindings on OpNS names.
+- **When**: User wants to register/deregister OpNS name identity bindings
+- **Actions**: `opnsRegister`, `opnsDeregister`
+
+### `dapp-connect`
+Build dApps that connect to 1Sat wallets using @1sat/connect and @1sat/react.
+- **When**: User is building a dApp with wallet connection, React hooks, or browser extension
+
+### `timelock`
+Lock and unlock BSV until specific block heights using CLTV scripts.
+- **When**: User wants to time-lock BSV, check lock status, unlock matured locks
+- **Actions**: `lockBsv`, `unlockBsv`, `getLockData`
+
+### `transaction-building`
+General transaction building, batch payments, OP_RETURN, signing, action registry.
+- **When**: User needs to send BSV, build custom transactions, sign messages, or use the action system
+- **Actions**: `sendBsv`, `sendAllBsv`, `signMessage` + two-phase signing pattern
+
+## Cross-Ecosystem Skills
+
+For capabilities beyond ordinals/tokens, reference these skills from other plugins:
+- **Key rotation / identity**: `bsv-skills:create-bap-identity`, `bsv-skills:manage-bap-backup`
+- **Key derivation**: `bsv-skills:key-derivation`
+- **Encrypted backup**: `bsv-skills:encrypt-decrypt-backup` (uses `bitcoin-backup` package)
+- **Message signing (BSM)**: `bsv-skills:message-signing`
+- **ORDFS content access**: `bsv-skills:ordfs`
+- **Sigma Identity auth**: `sigma-auth:setup-nextjs`, `sigma-auth:setup-convex`
 
 ## Libraries
 

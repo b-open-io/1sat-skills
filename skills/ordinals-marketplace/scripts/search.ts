@@ -1,82 +1,56 @@
 #!/usr/bin/env bun
 
-import { IndexerClient } from '@1sat/client'
-import { ONESAT_MAINNET_URL } from '@1sat/types'
+const API_BASE = 'https://api.1sat.app/1sat'
 
-async function searchInscriptions(query: string): Promise<void> {
-  console.log(`Searching 1Sat Ordinals for: "${query}"\n`);
+async function searchByOwner(address: string): Promise<void> {
+  console.log(`Fetching ordinals for owner: ${address}\n`)
 
-  try {
-    const indexer = new IndexerClient(ONESAT_MAINNET_URL)
+  const response = await fetch(`${API_BASE}/owner/${address}/txos`)
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.statusText}`)
+  }
 
-    // Search using the indexer client
-    const results = await indexer.inscriptions({
-      search: query,
-      limit: 20,
-      orderBy: 'createdAt',
-      orderDirection: 'desc'
-    })
+  const results = await response.json()
 
-    console.log("🔍 Search Results\n");
+  if (!Array.isArray(results) || results.length === 0) {
+    console.log('No ordinals found for this address.')
+    return
+  }
 
-    if (!results || results.length === 0) {
-      console.log("No inscriptions found.");
-      return;
+  // Filter to ordinal outputs (1 sat with inscription data)
+  const ordinals = results.filter(
+    (t: any) => t.satoshis === 1 && t.data?.inscription,
+  )
+
+  console.log(`Found ${ordinals.length} ordinals:\n`)
+
+  for (const [i, ord] of ordinals.entries()) {
+    console.log(`${i + 1}. ${ord.outpoint}`)
+    if (ord.data?.inscription?.contentType) {
+      console.log(`   Type: ${ord.data.inscription.contentType}`)
     }
-
-    // Display results
-    results.forEach((inscription: any, index: number) => {
-      console.log(`📄 ${index + 1}. Inscription ${inscription.id}`)
-      console.log(`   Type: ${inscription.contentType}`)
-      console.log(`   Size: ${inscription.contentLength} bytes`)
-      console.log(`   Created: ${new Date(inscription.createdAt).toLocaleDateString()}`)
-      if (inscription.collection) {
-        console.log(`   Collection: ${inscription.collection}`)
-      }
-      console.log(`   View: https://ordinals.gorillapool.io/inscription/${inscription.id}`)
-      console.log('')
-    })
-
-    console.log(`Total results: ${results.length}`)
-
-  } catch (error: any) {
-    // Fallback to direct API if client fails
-    console.log("Falling back to direct API...")
-    const apiUrl = `https://ordinals.gorillapool.io/api/inscriptions/search?q=${encodeURIComponent(query)}`;
-
-    try {
-      const response = await fetch(apiUrl);
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`);
-      }
-
-      const results = await response.json();
-
-      if (Array.isArray(results) && results.length === 0) {
-        console.log("No inscriptions found.");
-        return;
-      }
-
-      console.log(JSON.stringify(results, null, 2));
-
-    } catch (fallbackError: any) {
-      throw new Error(`Search failed: ${fallbackError.message}`);
+    if (ord.data?.map?.name) {
+      console.log(`   Name: ${ord.data.map.name}`)
     }
+    if (ord.data?.ordlock) {
+      const price = ord.data.ordlock.price
+      console.log(`   LISTED: ${price} sats (${(price / 1e8).toFixed(8)} BSV)`)
+    }
+    console.log(`   View: ${API_BASE}/content/${ord.outpoint}`)
+    console.log('')
   }
 }
 
-const args = process.argv.slice(2);
+const args = process.argv.slice(2)
 if (args.length === 0) {
-  console.error("Usage: bun run search.ts <query>");
-  console.error("");
-  console.error("Examples:");
-  console.error("  bun run search.ts 'pixel art'");
-  console.error("  bun run search.ts 'collection-name'");
-  console.error("  bun run search.ts 'pepe'");
-  process.exit(1);
+  console.error('Usage: bun run search.ts <owner-address>')
+  console.error('')
+  console.error('Examples:')
+  console.error("  bun run search.ts '1Address...'")
+  process.exit(1)
 }
 
-searchInscriptions(args.join(" ")).catch(e => {
-  console.error("❌ Error:", e.message);
-  process.exit(1);
-});
+searchByOwner(args[0]).catch((e) => {
+  console.error('Error:', e.message)
+  process.exit(1)
+})

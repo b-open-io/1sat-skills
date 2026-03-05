@@ -1,64 +1,181 @@
 ---
 name: ordinals-marketplace
-description: Browse and search 1Sat Ordinals marketplace on GorillaPool. View listings, search inscriptions, check sales, and find NFTs.
-allowed-tools: "Bash(bun:*)"
+description: "This skill should be used when working with 1Sat Ordinals marketplace operations — listing ordinals for sale, purchasing listings, canceling listings, browsing available ordinals, or managing OrdLock marketplace scripts. Triggers on 'list ordinal', 'sell NFT', 'buy ordinal', 'purchase listing', 'cancel listing', 'marketplace', 'OrdLock', 'ordinal price', or 'browse ordinals'. Uses @1sat/actions ordinals module."
 ---
 
 # Ordinals Marketplace
 
-Browse and search 1Sat Ordinals marketplace.
+List, purchase, and cancel ordinal listings using `@1sat/actions` and the OrdLock script.
 
-## When to Use
+## Actions
 
-- Search for ordinals/NFTs
-- View marketplace listings
-- Check recent sales
-- Find specific inscriptions
-- Browse collections
+| Action | Description |
+|--------|-------------|
+| `getOrdinals` | List ordinals in the wallet (with BEEF for spending) |
+| `listOrdinal` | List an ordinal for sale at a price |
+| `cancelListing` | Cancel an active listing |
+| `purchaseOrdinal` | Purchase a listed ordinal |
+| `deriveCancelAddress` | Get the cancel address for a listing |
 
-## Features
+## Get Ordinals from Wallet
 
-**Search Inscriptions**: Find ordinals by:
-- Inscription ID
-- Collection name
-- Content type (image, text, etc.)
-- Price range
+```typescript
+import { getOrdinals, createContext } from '@1sat/actions'
 
-**View Listings**: Browse:
-- Active sales listings
-- Recently listed
-- Price sorted
+const ctx = createContext(wallet, { services })
 
-**Sales History**: Check:
-- Recent sales
-- Price trends
-- Volume statistics
+const { outputs, BEEF } = await getOrdinals.execute(ctx, {
+  limit: 100,
+})
 
-## Usage
-
-```bash
-# Search inscriptions
-bun run /path/to/skills/ordinals-marketplace/scripts/search.ts "query"
-
-# View active listings
-bun run /path/to/skills/ordinals-marketplace/scripts/listings.ts
-
-# Recent sales
-bun run /path/to/skills/ordinals-marketplace/scripts/sales.ts
+// Each output has tags like:
+// type:image/png, origin:txid_0, name:My NFT
+for (const o of outputs) {
+  console.log(o.outpoint, o.tags)
+}
 ```
 
-## API Endpoints
+## List Ordinal for Sale
 
-GorillaPool Ordinals API:
-- Search: `GET https://ordinals.gorillapool.io/api/inscriptions/search`
-- Listings: `GET https://ordinals.gorillapool.io/api/market/listings`
-- Sales: `GET https://ordinals.gorillapool.io/api/market/sales`
+```typescript
+import { listOrdinal, getOrdinals, createContext } from '@1sat/actions'
 
-## Response Data
+const ctx = createContext(wallet, { services })
 
-Returns:
-- Inscription IDs
-- Content type and size
-- Current listings and prices
-- Sales history
-- Collection information
+// 1. Get ordinal and BEEF
+const { outputs, BEEF } = await getOrdinals.execute(ctx, {})
+const ordinal = outputs[0]
+
+// 2. List for sale
+const result = await listOrdinal.execute(ctx, {
+  ordinal,
+  inputBEEF: Array.from(BEEF),
+  price: 100000,  // Price in satoshis
+  payAddress: '1YourPaymentAddress...',
+})
+
+if (result.txid) {
+  console.log('Listed! txid:', result.txid)
+}
+```
+
+### How Listing Works
+
+1. Creates an OrdLock script that encodes the price and payment address
+2. The ordinal is locked in this script — only a valid purchase or cancel can spend it
+3. The listing is submitted to the marketplace overlay for indexing
+4. Tags are updated: `ordlock` tag is added, basket remains `ordinals`
+
+## Purchase a Listed Ordinal
+
+```typescript
+import { purchaseOrdinal, createContext } from '@1sat/actions'
+
+const ctx = createContext(wallet, { services })
+
+const result = await purchaseOrdinal.execute(ctx, {
+  outpoint: 'txid_0',  // The listed ordinal's outpoint
+  marketplaceAddress: '1MarketplaceAddress...',  // Optional marketplace fee address
+  marketplaceRate: 0.02,  // Optional marketplace fee rate (2%)
+})
+
+if (result.txid) {
+  console.log('Purchased! txid:', result.txid)
+}
+```
+
+### How Purchase Works
+
+1. Fetches the listing BEEF from the overlay
+2. Reads the OrdLock script to extract price and payment address
+3. Builds a transaction that satisfies the OrdLock:
+   - Pays the seller the listed price
+   - Pays marketplace fee (if applicable)
+   - Transfers the ordinal to the buyer
+4. Signs and broadcasts
+
+## Cancel a Listing
+
+```typescript
+import { cancelListing, getOrdinals, createContext } from '@1sat/actions'
+
+const ctx = createContext(wallet, { services })
+
+const { outputs, BEEF } = await getOrdinals.execute(ctx, {})
+const listedOrdinal = outputs.find(o => o.tags?.includes('ordlock'))
+
+const result = await cancelListing.execute(ctx, {
+  ordinal: listedOrdinal,
+  inputBEEF: Array.from(BEEF),
+})
+
+if (result.txid) {
+  console.log('Cancelled! txid:', result.txid)
+}
+```
+
+### How Cancel Works
+
+1. Derives the cancel key using the ordinal's custom instructions
+2. Signs the OrdLock input with the cancel key
+3. Transfers the ordinal back to the wallet (removes `ordlock` tag)
+4. Submits to overlay to clear the listing
+
+## Derive Cancel Address
+
+```typescript
+import { deriveCancelAddress, createContext } from '@1sat/actions'
+
+const ctx = createContext(wallet)
+
+const result = await deriveCancelAddress.execute(ctx, {
+  ordinal: listedOrdinal,
+})
+
+console.log('Cancel address:', result.address)
+```
+
+## OrdLock Script
+
+The OrdLock script encodes a marketplace listing:
+
+```
+<lockPrefix> <payAddress> <price> <lockSuffix>
+```
+
+- The script is satisfied by either:
+  - **Purchase**: Transaction includes an output paying the seller at `payAddress` for `price` satoshis
+  - **Cancel**: Signed by the cancel key (derived from the ordinal's custom instructions)
+
+## Browsing Marketplace via API
+
+Use the 1sat-stack API to browse listings:
+
+```typescript
+// Get ordinals by owner
+const res = await fetch('https://api.1sat.app/1sat/owner/1Address.../txos')
+const txos = await res.json()
+
+// Filter for listings (have ordlock data)
+const listings = txos.filter(t => t.data?.ordlock)
+
+// Get specific ordinal content
+const content = await fetch('https://api.1sat.app/1sat/content/txid_0')
+```
+
+## Tags on Marketplace Outputs
+
+| Tag | Meaning |
+|-----|---------|
+| `ordlock` | Currently listed for sale |
+| `type:{contentType}` | MIME type of the inscription |
+| `origin:{outpoint}` | Origin outpoint of the ordinal |
+| `name:{value}` | Name from MAP metadata |
+
+## Requirements
+
+```bash
+bun add @1sat/actions @1sat/wallet @bsv/sdk
+```
+
+Marketplace operations require `services` for overlay submission and BEEF fetching.
