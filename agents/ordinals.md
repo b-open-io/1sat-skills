@@ -44,82 +44,78 @@ Mint new ordinals/NFTs on BSV blockchain.
 
 ## Libraries
 
-### Current: js-1sat-ord
-The production library for 1Sat Ordinals operations:
+### Current: @1sat/sdk
 
-```typescript
-import {
-  createOrdinals,
-  sendOrdinals,
-  deployBsv21Token,
-  transferOrdToken,
-  fetchPayUtxos,
-  fetchNftUtxos,
-  fetchTokenUtxos,
-  createOrdListings,
-  purchaseOrdListing,
-  oneSatBroadcaster,
-  TokenType
-} from 'js-1sat-ord'
-import type { Utxo, NftUtxo, TokenUtxo, CreateOrdinalsConfig } from 'js-1sat-ord'
-```
+The active library for 1Sat Ordinals operations. Uses BRC-100 wallet interface (`WalletInterface`) via `OneSatContext`. Repo: `b-open-io/1sat-sdk`.
+
+**Packages:**
+- `@1sat/actions` — Action builders for inscriptions, ordinals, tokens, payments, locks, signing, OPNS
+- `@1sat/wallet` — BRC-100 wallet engine (OneSatWallet, OneSatServices)
+- `@1sat/wallet-node` — Node/Bun wallet factory (for scripts and backend)
+- `@1sat/wallet-browser` — Browser wallet factory
+- `@1sat/wallet-remote` — Remote-only wallet (connects to a running wallet server)
+- `@1sat/connect` — Connection layer: popup flow, events, session management for browser integration
+- `@1sat/client` — API service clients (ArcadeClient, BeefClient, Bsv21Client, OrdfsClient, OwnerClient, TxoClient, OverlayClient, ChaintracksClient)
+- `@1sat/react` — React hooks and components for wallet integration
+- `@1sat/extension` — Build browser wallet extensions implementing `window.onesat`
+- `@1sat/core` — Transaction building core
+- `@1sat/types` — Shared type definitions
+- `@1sat/utils` — Utility functions
 
 **Key Patterns**:
 ```typescript
+import { inscribe, transferOrdinals, listOrdinal, purchaseOrdinal, getOrdinals } from '@1sat/actions'
+import { createContext } from '@1sat/actions'
+
+// Set up context with BRC-100 wallet
+const ctx = createContext({ wallet, chain: 'main' })
+
 // Create inscription
-const config: CreateOrdinalsConfig = {
-  utxos: [paymentUtxo],  // Must have base64 encoded script
-  destinations: [{
-    address: ordinalAddress,
-    inscription: {
-      dataB64: btoa("Hello World"),
-      contentType: "text/plain"
-    }
-  }],
-  paymentPk
-}
-const { tx } = await createOrdinals(config)
-await tx.broadcast(oneSatBroadcaster())
-
-// Fetch ordinals
-const nftUtxos = await fetchNftUtxos(ordinalAddress)
-const collectionNfts = await fetchNftUtxos(ordinalAddress, collectionId)
-
-// Create listing
-const { tx } = await createOrdListings({
-  utxos: [paymentUtxo],
-  listings: [{ payAddress, price: 100000, listingUtxo, ordAddress }],
-  paymentPk,
-  ordPk
+const result = await inscribe.execute(ctx, {
+  base64Content: btoa('Hello World'),
+  contentType: 'text/plain',
+  map: { app: 'myapp', type: 'text' }
 })
 
-// Purchase listing
-const { tx } = await purchaseOrdListing({
-  utxos: [paymentUtxo],
-  paymentPk,
-  listingUtxo,
-  ordAddress
+// Get ordinals from wallet
+const { outputs, BEEF } = await getOrdinals.execute(ctx, { limit: 100 })
+
+// Transfer ordinal
+const result = await transferOrdinals.execute(ctx, {
+  transfers: [{ ordinal: outputs[0], address: recipientAddress }],
+  inputBEEF: BEEF
+})
+
+// List for sale
+const result = await listOrdinal.execute(ctx, {
+  ordinal: outputs[0],
+  inputBEEF: BEEF,
+  price: 100000, // satoshis
+  payAddress: '1A1zP1...'
+})
+
+// Purchase
+const result = await purchaseOrdinal.execute(ctx, {
+  outpoint: 'txid_0',
+  marketplaceAddress: '1Market...',
+  marketplaceRate: 0.02
 })
 ```
 
-### Future: @1sat/sdk (WIP)
-New architecture being developed in `b-open-io/1sat-sdk`:
-- BRC-100 compatible wallet integration
-- Modern SDK patterns
-- Migrating functionality from js-1sat-ord
+### Legacy: js-1sat-ord
 
-**Status**: Work in progress - use js-1sat-ord for production
+**Deprecated — do not use for new code.** The old WIF-based library (`b-open-io/js-1sat-ord`) has had zero commits in recent months. Use `@1sat/actions` instead.
 
 ## APIs
 
-- **GorillaPool Ordinals**: `https://ordinals.gorillapool.io/api/`
-  - Inscriptions search
-  - Market listings
-  - Sales history
-  - Collection data
+- **1sat-stack**: `https://api.1sat.app/1sat` — Unified BSV indexing (TXOs, tokens, ORDFS, BAP, broadcasting)
+  - Use `Skill(1sat-skills:1sat-stack)` for all data queries and broadcasting
+  - Replaces GorillaPool ordinals API, WhatsOnChain, separate token APIs
 
-- **ORDFS Gateway**: Content delivery for on-chain files
-  - Access via ordfs.network
+- **ORDFS Gateway**: On-chain file system and content delivery
+  - `ordfs.network` — standalone ORDFS gateway
+  - Also served via 1sat-stack at `/content/{path}` and `/ordfs/stream/{outpoint}`
+  - Access inscribed files by outpoint or origin path
 
 ## Core Concepts
 
