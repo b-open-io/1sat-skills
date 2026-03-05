@@ -50,19 +50,27 @@ The active library collection for 1Sat Ordinals operations. A monorepo at `b-ope
 
 **Token deploy note:** `deployBsv21Token` hasn't been rewritten as a new-style action yet — import it from `@1sat/core`, which re-exports it from the underlying implementation.
 
-**Packages:**
-- `@1sat/actions` — Action builders for inscriptions, ordinals, tokens, payments, locks, signing, OPNS
-- `@1sat/wallet` — BRC-100 wallet engine (OneSatWallet, OneSatServices)
-- `@1sat/wallet-node` — Node/Bun wallet factory (for scripts and backend)
-- `@1sat/wallet-browser` — Browser wallet factory
-- `@1sat/wallet-remote` — Remote-only wallet (connects to a running wallet server)
-- `@1sat/connect` — Connection layer: popup flow, events, session management for browser integration
-- `@1sat/client` — API service clients (ArcadeClient, BeefClient, Bsv21Client, OrdfsClient, OwnerClient, TxoClient, OverlayClient, ChaintracksClient)
-- `@1sat/react` — React hooks and components for wallet integration
-- `@1sat/extension` — Build browser wallet extensions implementing `window.onesat`
-- `@1sat/core` — Transaction building core
-- `@1sat/types` — Shared type definitions
-- `@1sat/utils` — Utility functions
+**Package guide — pick by use case:**
+
+| Use case | Package |
+|----------|---------|
+| Scripts, backend, CLI (Node/Bun) | `@1sat/wallet-node` → `createNodeWallet` (SQLite/MySQL storage) |
+| Embedded wallet in a web DApp | `@1sat/wallet-browser` → `createWebWallet` (IndexedDB storage) |
+| Connect to a running wallet server (TokenPass) | `@1sat/wallet-remote` → `createRemoteWallet` |
+| React DApp — connect to existing wallet | `@1sat/react` — `OneSatProvider`, `ConnectButton`, hooks |
+| Connect to browser wallet extension (window.onesat) | `@1sat/connect` → `OneSatBrowserProvider`, transports |
+| Build a browser wallet extension | `@1sat/extension` → `injectOneSatProvider` |
+| Execute operations on any wallet | `@1sat/actions` — inscribe, transfer, list, purchase, tokens |
+| Low-level tx building | `@1sat/core` — `TxBuilder`, `deployBsv21Token` |
+| Backend API calls to 1sat-stack | `@1sat/client` — `ArcadeClient`, `OrdfsClient`, `OwnerClient`, `Bsv21Client` |
+| Shared types | `@1sat/types` |
+
+**`@1sat/react` hooks** (React DApps — use these instead of `@1sat/actions` when in React):
+```typescript
+import { OneSatProvider, ConnectButton, useInscribe, useSendOrdinals,
+  useCreateListing, usePurchaseListing, useCancelListing,
+  useTransferToken, useOrdinals, useBalance, useTokens } from '@1sat/react'
+```
 
 **Key Patterns**:
 ```typescript
