@@ -1,12 +1,12 @@
 ---
 name: wallet-create-ordinals
-description: "This skill should be used when a user wants to mint, inscribe, or create an ordinal or NFT on BSV blockchain — such as 'mint this image as an ordinal', 'create an NFT on BSV', 'inscribe this file on-chain', 'how do I create an ordinal collection', 'I want to permanently store a file on blockchain', or 'how much does it cost to mint'. Uses @1sat/actions from the @1sat/sdk to construct and broadcast inscription transactions via a BRC-100 wallet."
+description: "This skill should be used when a user wants to mint, inscribe, or create an ordinal or NFT on BSV blockchain — such as 'mint this image as an ordinal', 'create an NFT on BSV', 'inscribe this file on-chain', 'how do I create an ordinal collection', 'I want to permanently store a file on blockchain', or 'how much does it cost to mint'. Uses @1sat/actions from the 1sat-sdk to construct and broadcast inscription transactions via a BRC-100 wallet."
 allowed-tools: "Bash(bun:*)"
 ---
 
 # Wallet Create Ordinals
 
-Mint new ordinals/NFTs on BSV blockchain using `@1sat/actions` from the `@1sat/sdk`.
+Mint new ordinals/NFTs on BSV blockchain using `@1sat/actions` from the `1sat-sdk`.
 
 ## When to Use
 
@@ -62,11 +62,31 @@ Minting creates:
 - Permanent, immutable storage
 - Tradeable NFT asset
 
+## Deploying a BSV21 Token
+
+To create (deploy) a new fungible token, use `deployBsv21Token` from `@1sat/core`:
+
+```typescript
+import { deployBsv21Token, type DeployBsv21TokenConfig } from '@1sat/core'
+
+// DeployBsv21TokenConfig requires: symbol, icon, utxos, initialDistribution
+const result = await deployBsv21Token({
+  symbol: 'MYTOKEN',
+  decimals: 8,
+  icon: iconOutpoint,         // outpoint of icon inscription, or IconInscription object
+  utxos: paymentUtxos,
+  initialDistribution: {
+    address: ownerAddress,
+    amt: 21000000n
+  }
+})
+```
+
 ## Requirements
 
 - BRC-100 compatible wallet (`@1sat/wallet`, `@1sat/wallet-node`, or `@1sat/wallet-browser`)
 - File to inscribe (image, text, etc.)
-- `@1sat/actions` package for inscription creation
+- `@1sat/actions` for inscription creation; `@1sat/core` for token deployment
 - Sufficient BSV balance for inscription cost + fees
 
 ## Cost

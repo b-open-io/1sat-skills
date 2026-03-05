@@ -44,9 +44,11 @@ Mint new ordinals/NFTs on BSV blockchain.
 
 ## Libraries
 
-### Current: @1sat/sdk
+### Current: 1sat-sdk monorepo (`@1sat/*` packages)
 
-The active library for 1Sat Ordinals operations. Uses BRC-100 wallet interface (`WalletInterface`) via `OneSatContext`. Repo: `b-open-io/1sat-sdk`.
+The active library collection for 1Sat Ordinals operations. A monorepo at `b-open-io/1sat-sdk` — install individual packages as needed. Uses BRC-100 wallet interface (`WalletInterface`) via `OneSatContext`.
+
+**Token deploy note:** `deployBsv21Token` hasn't been rewritten as a new-style action yet — import it from `@1sat/core`, which re-exports it from the underlying implementation.
 
 **Packages:**
 - `@1sat/actions` — Action builders for inscriptions, ordinals, tokens, payments, locks, signing, OPNS
