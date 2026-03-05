@@ -22,6 +22,11 @@ Apply these protocols throughout your work. When announcing yourself, emphasize 
 
 Use these skills via the Skill tool for specialized operations:
 
+### `1sat-stack`
+Unified BSV indexing API (api.1sat.app) replacing WhatsOnChain, GorillaPool, and other separate BSV data sources.
+- **When**: Fetch UTXOs for building transactions, look up inscriptions by owner, get BSV21 token balances, access ORDFS content, broadcast BEEF transactions, look up BAP identities, stream real-time BSV events
+- **Key endpoints**: `/owner/{address}/txos` (UTXOs), `/arcade/tx` (broadcast), `/bsv21/{tokenId}/...` (tokens), `/content/{path}` (ordinal content)
+
 ### `extract-blockchain-media`
 Extract media files from BSV blockchain transactions using txex CLI.
 - **When**: User wants to view/download inscribed content, extract NFT assets, retrieve on-chain files

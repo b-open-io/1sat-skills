@@ -1,197 +1,189 @@
+---
+name: 1sat-stack
+description: "This skill should be used when working with the 1sat-stack unified BSV indexing API — whenever an agent needs to fetch UTXOs, look up inscriptions or ordinals, get BSV21 token balances, access ORDFS on-chain content, broadcast transactions, look up BAP identities, or stream real-time BSV events. Use this when replacing WhatsOnChain, GorillaPool ordinals API, or other separate BSV indexers. Also use when the user asks about 'api.1sat.app', 'unified BSV indexer', 'BSV21 token lookup', 'ORDFS content', 'overlay engine', or 'broadcasting BEEF transactions'."
+version: 1.0.0
+---
+
 # 1sat-stack
 
-Unified BSV indexing platform that consolidates overlay engine, indexer, BSV21 tokens, and ORDFS into a single API. This is the new standard API that will replace all other indexers.
+Composable BSV indexing server consolidating overlay engine, TXO indexer, BSV21 tokens, ORDFS, and BAP identity into a single API.
 
-## Triggers
-- "1sat-stack API"
-- "unified indexer"
-- "1sat API"
-- "BSV indexing"
-- "overlay engine"
-- "BSV21 tokens"
-- "1sat docs"
-- "replace indexers"
-- "consolidate BSV APIs"
+**Production API base:** `https://api.1sat.app/1sat`
 
-## Framework
+Source: https://github.com/b-open-io/1sat-stack
 
-You are an expert on the 1sat-stack API, the unified indexing platform for BSV that consolidates multiple services into one comprehensive API.
+---
 
-### Overview
+## Core API Endpoints
 
-1sat-stack (https://api.1sat.app/1sat/docs) is the new standard API that replaces:
-- Separate overlay engines
-- Multiple indexers (WhatsOnChain, etc.)
-- BSV21 token endpoints
-- ORDFS endpoints
-- Various other BSV data services
+All endpoints are prefixed with `/1sat` on the hosted instance.
 
-### API Base URL
+### Transaction Outputs (TXOs)
+
 ```
-https://api.1sat.app/1sat
+GET  /txo/{outpoint}              Get a specific output (e.g., txid.0)
+GET  /txo/tx/{txid}               All outputs for a transaction
+POST /txo/search                  Search outputs with filters (tags, owner, type)
+POST /txo/outpoints               Bulk fetch multiple outpoints
+POST /txo/spends                  Check spend status of outpoints
+GET  /txo/{outpoint}/spend        Get spending txid for an output
 ```
 
-### Key Endpoints
+### Owner (Address) Queries
 
-#### Transaction Endpoints
-- `GET /tx/{txid}` - Get transaction by ID
-- `GET /txo/{outpoint}` - Get transaction output
-- `GET /txos` - List transaction outputs with filters
-- `POST /txs/broadcast` - Broadcast transaction
-- `GET /txs/inscriptions` - List inscriptions
-- `GET /tx/{txid}/proof` - Get TSC proof
-
-#### Address Endpoints
-- `GET /addresses/{address}/balance` - Get address balance
-- `GET /addresses/{address}/history` - Get address history
-- `GET /addresses/{address}/utxos` - Get unspent outputs
-
-#### Block Endpoints
-- `GET /blocks/height` - Current block height
-- `GET /blocks/{height}` - Get block by height
-- `GET /blocks/{hash}` - Get block by hash
-- `GET /blocks/latest` - Latest blocks
-
-#### Token Endpoints (BSV20/BSV21)
-- `GET /tokens` - List all tokens
-- `GET /tokens/{tick}` - Token details
-- `GET /tokens/{tick}/holders` - Token holders
-- `GET /addresses/{address}/tokens` - Address token balances
-
-#### Ordinals/Inscriptions
-- `GET /inscriptions` - List inscriptions
-- `GET /inscriptions/{id}` - Get inscription details
-- `GET /inscriptions/{id}/content` - Get inscription content
-- `GET /addresses/{address}/inscriptions` - Address inscriptions
-
-#### ORDFS Integration
-- `GET /ordfs/{outpoint}` - Get ORDFS content
-- `GET /ordfs/resolve/{path}` - Resolve ORDFS path
-- `GET /ordfs/directory/{outpoint}` - List directory
-
-#### Search
-- `GET /search` - Unified search across txs, blocks, addresses
-- `POST /search/advanced` - Advanced search with filters
-
-### Response Format
-
-All responses follow consistent format:
-```json
-{
-  "data": {...},
-  "meta": {
-    "pagination": {...},
-    "timestamp": "2024-01-01T00:00:00Z"
-  }
-}
+```
+GET  /owner/{address}/txos        All unspent outputs for an address
+GET  /owner/{address}/balance     Satoshi balance for an address
 ```
 
-### Authentication
+Use `owner` endpoints as the primary way to fetch UTXOs before building transactions.
 
-Most endpoints are public. Premium features require API key:
+### BEEF Transactions
+
 ```
-Authorization: Bearer YOUR_API_KEY
+GET  /beef/{txid}                 Full BEEF (tx + merkle proof)
+GET  /beef/{txid}/tx              Raw transaction bytes only
+GET  /beef/{txid}/proof           Merkle proof bytes only
 ```
 
-### Rate Limits
+### Broadcasting (Arcade)
+
+```
+POST /arcade/tx                   Broadcast single BEEF transaction
+POST /arcade/txs                  Broadcast multiple BEEF transactions
+GET  /arcade/tx/{txid}            Check broadcast status
+GET  /arcade/policy               Fee rates and transaction limits
+GET  /arcade/events/{token}       SSE stream of broadcast status updates
+```
+
+### BSV21 Fungible Tokens
+
+```
+GET  /bsv21/{tokenId}                                        Token details
+GET  /bsv21/{tokenId}/outputs                                All token outputs
+GET  /bsv21/{tokenId}/{lockType}/{address}/balance           Token balance for address
+GET  /bsv21/{tokenId}/{lockType}/{address}/unspent           Unspent token UTXOs
+GET  /bsv21/{tokenId}/{lockType}/{address}/history           Token history for address
+GET  /bsv21/lookup                                           Discover tokens by ticker
+```
+
+`lockType` is typically `p2pkh`.
+
+### ORDFS (On-chain Content)
+
+```
+GET  /content/{path}              Serve ordinal content by path
+GET  /ordfs/stream/{outpoint}     Stream ORDFS content by outpoint
+GET  /ordfs/metadata/{path}       Get ORDFS file metadata
+```
+
+### BAP Identity
+
+```
+GET  /bap/profile/{bapId}         Profile for a BAP identity
+POST /bap/identity/get            Resolve identity from address or idKey
+GET  /bap/identity/search         Search identities by query
+```
+
+### Real-time Streaming
+
+```
+GET  /sse/{topics}                SSE stream for comma-separated topic events
+GET  /chaintracks/tip/stream      SSE stream of new block tips
+```
+
+### Chain Info
+
+```
+GET  /chaintracks/height          Current chain height
+GET  /chaintracks/tip             Latest block header
+GET  /health                      Server health check
+```
+
+### Overlay Engine (Advanced)
+
+```
+POST /overlay/submit              Submit tagged BEEF to the overlay
+POST /overlay/lookup              Query the overlay lookup services
+GET  /overlay/listTopicManagers   List active topic managers
+GET  /overlay/listLookupServiceProviders  List active lookup services
+```
+
+---
+
+## Common Patterns
+
+### Fetch UTXOs to Build a Transaction
+
+```typescript
+const res = await fetch('https://api.1sat.app/1sat/owner/1A1zP1.../txos');
+const utxos = await res.json();
+// utxos: array of {outpoint, satoshis, data, score, ...}
+```
+
+### Broadcast a Transaction
+
+```typescript
+const res = await fetch('https://api.1sat.app/1sat/arcade/tx', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/octet-stream' },
+  body: beefHex  // BEEF format
+});
+const result = await res.json();
+// result.txid on success
+```
+
+### Get BSV21 Token Balance
+
+```typescript
+const tokenId = 'abc123...'; // BSV21 token ID (txid of deploy)
+const address = '1A1zP1...';
+const res = await fetch(
+  `https://api.1sat.app/1sat/bsv21/${tokenId}/p2pkh/${address}/balance`
+);
+const { balance } = await res.json();
+```
+
+### Search for Inscriptions by Owner
+
+```typescript
+const res = await fetch('https://api.1sat.app/1sat/txo/search', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    owner: '1A1zP1...',
+    tag: 'inscription',
+    limit: 100
+  })
+});
+const inscriptions = await res.json();
+```
+
+---
+
+## Authentication
+
+Most endpoints are public. For higher rate limits, add an API key:
+
+```typescript
+headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
+```
+
+Rate limits:
 - Public: 100 req/min
 - Authenticated: 1000 req/min
 
-### Migration Guide
+---
 
-From WhatsOnChain:
-```typescript
-// Old
-const woc = 'https://api.whatsonchain.com/v1/bsv/main'
-fetch(`${woc}/tx/${txid}`)
+## Self-Hosting
 
-// New
-const api = 'https://api.1sat.app/1sat'
-fetch(`${api}/tx/${txid}`)
-```
+1sat-stack is open source and deployable on Railway. Each service module is configured via `config.yaml` with `mode: embedded | remote | disabled`. See `config.example.yaml` in the repo for full options.
 
-From multiple services:
-```typescript
-// Old - Multiple APIs
-const wocTx = await fetch(`${woc}/tx/${txid}`)
-const ordinalData = await fetch(`${ordinals}/inscription/${id}`)
-const tokenData = await fetch(`${tokens}/bsv20/${tick}`)
+---
 
-// New - Single API
-const tx = await fetch(`${api}/tx/${txid}`)
-const inscription = await fetch(`${api}/inscriptions/${id}`)
-const token = await fetch(`${api}/tokens/${tick}`)
-```
+## Reference Files
 
-### Example Usage
-
-```typescript
-const API_BASE = 'https://api.1sat.app/1sat';
-
-// Get transaction with inscription data
-async function getTxWithInscription(txid: string) {
-  const response = await fetch(`${API_BASE}/tx/${txid}`);
-  const data = await response.json();
-
-  // Check if it has inscriptions
-  if (data.data.inscriptions) {
-    console.log('Inscription found:', data.data.inscriptions[0]);
-  }
-
-  return data.data;
-}
-
-// Search for BSV20 tokens
-async function searchTokens(query: string) {
-  const response = await fetch(`${API_BASE}/tokens?search=${query}`);
-  const data = await response.json();
-  return data.data;
-}
-
-// Get ORDFS content
-async function getOrdfsContent(outpoint: string) {
-  const response = await fetch(`${API_BASE}/ordfs/${outpoint}`);
-  return response.text(); // Returns actual content
-}
-```
-
-### Best Practices
-
-1. **Use single API**: Migrate from multiple indexers to 1sat-stack
-2. **Cache responses**: Reduce API calls for static data
-3. **Handle pagination**: Use meta.pagination for large datasets
-4. **Error handling**: Check response status and handle errors gracefully
-5. **Use appropriate endpoints**: Don't parse transactions manually for inscription/token data
-
-### Common Patterns
-
-**Get full transaction data with all overlays:**
-```typescript
-const tx = await fetch(`${API_BASE}/tx/${txid}?include=inscriptions,tokens,ordfs`);
-```
-
-**Stream real-time data:**
-```typescript
-const events = new EventSource(`${API_BASE}/stream?address=${address}`);
-events.onmessage = (event) => {
-  console.log('New transaction:', JSON.parse(event.data));
-};
-```
-
-**Batch requests:**
-```typescript
-const batch = await fetch(`${API_BASE}/batch`, {
-  method: 'POST',
-  body: JSON.stringify({
-    requests: [
-      { method: 'GET', path: '/tx/abc123' },
-      { method: 'GET', path: '/blocks/latest' }
-    ]
-  })
-});
-```
-
-### Related Skills
-- `wallet-create-ordinals` - Mint ordinals using 1sat-stack
-- `ordinals-marketplace` - Browse marketplace via 1sat-stack
-- `extract-blockchain-media` - Extract media using 1sat-stack endpoints
+For detailed endpoint parameters and response schemas, see:
+- **`references/api-reference.md`** — Full endpoint reference with request/response details
+- **`examples/migration-guide.md`** — Before/after patterns migrating from WOC + GorillaPool + others
+- **`scripts/query-unified.ts`** — Working TypeScript examples for all major operations
