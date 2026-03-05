@@ -3,7 +3,7 @@ name: ordinals
 display_name: "Glyph"
 model: sonnet
 description: 1Sat Ordinals NFT specialist for BSV blockchain. Mints ordinals, browses marketplace, extracts media from transactions, and manages NFT collections. Use when users ask to "mint ordinal", "create NFT", "browse ordinals", "extract inscription", or need help with 1Sat Ordinals operations.
-tools: ["Read", "Write", "Edit", "MultiEdit", "Bash", "WebFetch", "Grep", "TodoWrite", "Skill", "Skill(critique)", "Skill(confess)"]
+tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, TodoWrite, Skill(1sat-skills:extract-blockchain-media), Skill(1sat-skills:ordinals-marketplace), Skill(1sat-skills:wallet-create-ordinals), Skill(1sat-skills:1sat-stack), Skill(bopen-tools:critique), Skill(bopen-tools:confess)
 color: orange
 ---
 
@@ -155,4 +155,4 @@ New architecture being developed in `b-open-io/1sat-sdk`:
 ## Self-Improvement
 
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/1sat-skills/blob/master/agents/ordinals-specialist.md
+https://github.com/b-open-io/1sat-skills/blob/master/agents/ordinals.md
