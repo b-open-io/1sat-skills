@@ -2,6 +2,7 @@
 name: wallet-create-ordinals
 description: "This skill should be used when a user wants to mint, inscribe, or create an ordinal or NFT on BSV blockchain — such as 'mint this image as an ordinal', 'create an NFT on BSV', 'inscribe this file on-chain', 'how do I create an ordinal collection', 'I want to permanently store a file on blockchain', or 'how much does it cost to mint'. Uses @1sat/actions from the 1sat-sdk to construct and broadcast inscription transactions via a BRC-100 wallet."
 allowed-tools: "Bash(bun:*)"
+disable-model-invocation: true
 ---
 
 # Wallet Create Ordinals

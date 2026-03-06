@@ -1,6 +1,7 @@
 ---
 name: ordinals-marketplace
 description: "This skill should be used when working with 1Sat Ordinals marketplace operations — listing ordinals for sale, purchasing listings, canceling listings, browsing available ordinals, or managing OrdLock marketplace scripts. Triggers on 'list ordinal', 'sell NFT', 'buy ordinal', 'purchase listing', 'cancel listing', 'marketplace', 'OrdLock', 'ordinal price', or 'browse ordinals'. Uses @1sat/actions ordinals module."
+disable-model-invocation: true
 ---
 
 # Ordinals Marketplace

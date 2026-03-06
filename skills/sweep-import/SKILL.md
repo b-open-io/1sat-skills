@@ -1,6 +1,7 @@
 ---
 name: sweep-import
 description: "This skill should be used when importing or sweeping assets from an external wallet into a BRC-100 wallet — such as 'import from WIF', 'sweep wallet', 'migrate from Yours wallet', 'import ordinals', 'sweep tokens', 'transfer from old wallet', or 'import private key'. Covers sweeping BSV, ordinals, and BSV21 tokens using @1sat/actions sweep module."
+disable-model-invocation: true
 ---
 
 # Sweep & Import

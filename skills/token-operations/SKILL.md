@@ -1,6 +1,7 @@
 ---
 name: token-operations
 description: "This skill should be used when working with BSV21 fungible tokens — sending tokens, checking token balances, listing token UTXOs, purchasing tokens from marketplace, deploying new tokens, or burning tokens. Triggers on 'send tokens', 'token balance', 'BSV21', 'BSV-20', 'fungible token', 'transfer tokens', 'deploy token', 'burn tokens', 'token listing', 'buy tokens', or 'token UTXO'. Uses @1sat/actions and @1sat/core packages from the 1sat-sdk."
+disable-model-invocation: true
 ---
 
 # Token Operations
