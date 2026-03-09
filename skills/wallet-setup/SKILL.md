@@ -1,6 +1,6 @@
 ---
 name: wallet-setup
-description: "This skill should be used when setting up a 1Sat wallet, creating a new wallet instance, syncing addresses, configuring storage, or restoring from backup. Triggers on 'create wallet', 'setup wallet', 'initialize wallet', 'sync wallet', 'restore wallet', 'wallet backup', 'address sync', 'wallet storage', 'IndexedDB wallet', 'SQLite wallet', 'BRC-100 wallet', 'wallet factory', 'remote wallet', or 'full sync'. Uses @1sat/wallet, @1sat/wallet-node, @1sat/wallet-browser, and @1sat/wallet-remote packages."
+description: "This skill should be used when setting up a 1Sat wallet, creating a new wallet instance, syncing addresses, configuring storage, or restoring from backup. Triggers on 'create wallet', 'setup wallet', 'initialize wallet', 'sync wallet', 'restore wallet', 'wallet backup', 'address sync', 'wallet storage', 'IndexedDB wallet', 'SQLite wallet', 'BRC-100 wallet', 'wallet factory', 'remote wallet', or 'full sync'. Uses @1sat/wallet, @1sat/wallet-node, and @1sat/wallet-remote packages. Note: @1sat/wallet-browser is deprecated in favor of @1sat/wallet-remote."
 ---
 
 # Wallet Setup
@@ -12,9 +12,9 @@ Create, configure, and sync 1Sat wallets for Node.js, browser, or remote environ
 | Package | Environment | Storage |
 |---------|-------------|---------|
 | `@1sat/wallet-node` | Node.js / Bun | SQLite (Knex) or MySQL |
-| `@1sat/wallet-browser` | Browser | IndexedDB |
 | `@1sat/wallet-remote` | Any (thin client) | Remote server only |
 | `@1sat/wallet` | Core library | Indexers, backup, address sync |
+| `@1sat/wallet-browser` | **Deprecated** | Use `@1sat/wallet-remote` instead |
 
 ## Node.js Wallet
 
@@ -56,25 +56,6 @@ await destroy()
 | `fullSync` | `((onProgress?) => Promise<FullSyncResult>) \| undefined` | Only available if `remoteStorageUrl` was provided and connected |
 | `storage` | `WalletStorageManager` | For diagnostics |
 | `remoteStorage` | `StorageClient \| undefined` | For diagnostics |
-
-## Browser Wallet
-
-```typescript
-import { createWebWallet } from '@1sat/wallet-browser'
-
-const { wallet, services, monitor, destroy, fullSync } = await createWebWallet({
-  privateKey: identityWif,        // PrivateKey | WIF string | hex string
-  chain: 'main',
-  storageIdentityKey: 'device-unique-id', // different per device
-  // Optional:
-  remoteStorageUrl: 'https://storage.example.com',
-  onMonitorEvent: (event) => console.log(event.type, event),
-})
-
-monitor.startTasks()
-```
-
-`WebWalletConfig` is identical to `NodeWalletConfig` except it uses IndexedDB (no `storage` Knex option) and adds an `onMonitorEvent` callback for structured lifecycle events.
 
 ## Remote Wallet
 
@@ -235,8 +216,8 @@ These run automatically during address sync. No configuration needed.
 
 ```bash
 bun add @1sat/wallet-node    # Node.js / Bun
-bun add @1sat/wallet-browser # Browser
 bun add @1sat/wallet-remote  # Remote (thin client)
+# @1sat/wallet-browser is deprecated — use @1sat/wallet-remote instead
 ```
 
 All environment packages depend on `@1sat/wallet` (core) which provides indexers, backup, and address sync.

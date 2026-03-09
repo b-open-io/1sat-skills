@@ -88,7 +88,7 @@ const result = await deployBsv21Token({
 
 ## Requirements
 
-- BRC-100 compatible wallet (`@1sat/wallet`, `@1sat/wallet-node`, or `@1sat/wallet-browser`)
+- BRC-100 compatible wallet (`@1sat/wallet`, `@1sat/wallet-node`, or `@1sat/wallet-remote`)
 - File to inscribe (image, text, etc.)
 - `@1sat/actions` for inscription creation; `@1sat/core` for token deployment
 - Sufficient BSV balance for inscription cost + fees

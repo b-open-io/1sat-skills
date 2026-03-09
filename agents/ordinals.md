@@ -98,8 +98,7 @@ The active library collection for 1Sat Ordinals operations. A monorepo at `b-ope
 | Use case | Package |
 |----------|---------|
 | Scripts, backend, CLI (Node/Bun) | `@1sat/wallet-node` → `createNodeWallet` (SQLite/MySQL storage) |
-| Embedded wallet in a web DApp | `@1sat/wallet-browser` → `createWebWallet` (IndexedDB storage) |
-| Connect to a running wallet server (TokenPass) | `@1sat/wallet-remote` → `createRemoteWallet` |
+| Thin client (browser extensions, DApps) | `@1sat/wallet-remote` → `createRemoteWallet` (remote storage) |
 | React DApp — connect to existing wallet | `@1sat/react` — `OneSatProvider`, `ConnectButton`, hooks |
 | Connect to browser wallet extension (window.onesat) | `@1sat/connect` → `OneSatBrowserProvider`, transports |
 | Build a browser wallet extension | `@1sat/extension` → `injectOneSatProvider` |
