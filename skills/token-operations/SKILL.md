@@ -119,9 +119,9 @@ const result = await purchaseBsv21.execute(ctx, {
 })
 ```
 
-## Deploy a New Token
+## Deploy a New Token (low-level)
 
-Use `@1sat/core` for token deployment:
+> No action exists for token deployment yet. Use `@1sat/core` directly with raw private keys.
 
 ```typescript
 import { deployBsv21Token } from '@1sat/core'
@@ -143,9 +143,9 @@ const result = await deployBsv21Token({
 console.log('Deployed token:', result.tx.id('hex'))
 ```
 
-## Burn Tokens
+## Burn Tokens (low-level)
 
-To burn tokens, use `transferOrdTokens` from `@1sat/core` with `burn: true`:
+> No action exists for token burning yet. Use `@1sat/core` directly with raw private keys.
 
 ```typescript
 import { transferOrdTokens, TokenType } from '@1sat/core'

@@ -73,7 +73,7 @@ Lock and unlock BSV until specific block heights using CLTV scripts.
 ### `transaction-building`
 General transaction building, batch payments, OP_RETURN, signing, action registry.
 - **When**: User needs to send BSV, build custom transactions, sign messages, or use the action system
-- **Actions**: `sendBsv`, `sendAllBsv`, `signMessage` + two-phase signing pattern
+- **Actions**: `sendBsv`, `sendAllBsv`, `signBsm` + two-phase signing pattern
 
 ## Cross-Ecosystem Skills
 

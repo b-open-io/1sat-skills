@@ -97,11 +97,11 @@ const result = await sendAllBsv.execute(ctx, {
 ## Sign Messages (BSM)
 
 ```typescript
-import { signMessage, createContext } from '@1sat/actions'
+import { signBsm, createContext } from '@1sat/actions'
 
 const ctx = createContext(wallet)
 
-const result = await signMessage.execute(ctx, {
+const result = await signBsm.execute(ctx, {
   message: 'Hello, I own this wallet',
   encoding: 'utf8',  // 'utf8' | 'hex' | 'base64'
 })
@@ -110,7 +110,7 @@ const result = await signMessage.execute(ctx, {
 // sig is base64-encoded compact signature (BSM format)
 
 // With derivation tag for domain-specific keys
-const result = await signMessage.execute(ctx, {
+const result = await signBsm.execute(ctx, {
   message: 'Login to example.com',
   tag: {
     label: 'auth',
@@ -200,7 +200,7 @@ const tools = actionRegistry.toMcpTools()
 | `tokens` | `listTokens`, `getBsv21Balances`, `sendBsv21`, `purchaseBsv21` |
 | `inscriptions` | `inscribe` |
 | `locks` | `getLockData`, `lockBsv`, `unlockBsv` |
-| `signing` | `signMessage` |
+| `signing` | `signBsm` |
 | `sweep` | `sweepBsv`, `sweepOrdinals`, `sweepBsv21` |
 | `opns` | `opnsRegister`, `opnsDeregister` |
 

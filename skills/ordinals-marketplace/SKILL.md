@@ -13,6 +13,7 @@ List, purchase, and cancel ordinal listings using `@1sat/actions` and the OrdLoc
 | Action | Description |
 |--------|-------------|
 | `getOrdinals` | List ordinals in the wallet (with BEEF for spending) |
+| `transferOrdinals` | Transfer ordinals to new owners |
 | `listOrdinal` | List an ordinal for sale at a price |
 | `cancelListing` | Cancel an active listing |
 | `purchaseOrdinal` | Purchase a listed ordinal |
@@ -34,6 +35,43 @@ const { outputs, BEEF } = await getOrdinals.execute(ctx, {
 for (const o of outputs) {
   console.log(o.outpoint, o.tags)
 }
+```
+
+## Transfer Ordinals
+
+```typescript
+import { transferOrdinals, getOrdinals, createContext } from '@1sat/actions'
+
+const ctx = createContext(wallet, { services })
+
+// 1. Get ordinal and BEEF
+const { outputs, BEEF } = await getOrdinals.execute(ctx, {})
+const ordinal = outputs[0]
+
+// 2. Transfer to counterparty (by identity key — preferred)
+const result = await transferOrdinals.execute(ctx, {
+  transfers: [
+    { ordinal, counterparty: '02abc...' },
+  ],
+  inputBEEF: Array.from(BEEF),
+})
+
+// Or transfer by address (external — not tracked in recipient's wallet)
+const result2 = await transferOrdinals.execute(ctx, {
+  transfers: [
+    { ordinal, address: '1Recipient...' },
+  ],
+  inputBEEF: Array.from(BEEF),
+})
+
+// Batch transfer multiple ordinals
+const result3 = await transferOrdinals.execute(ctx, {
+  transfers: [
+    { ordinal: outputs[0], counterparty: '02abc...' },
+    { ordinal: outputs[1], address: '1Bob...' },
+  ],
+  inputBEEF: Array.from(BEEF),
+})
 ```
 
 ## List Ordinal for Sale
