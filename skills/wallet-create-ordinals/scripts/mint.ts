@@ -1,15 +1,12 @@
 #!/usr/bin/env bun
 
-import { createOrdinals, fetchPayUtxos } from '@1sat/core'
-import { ArcadeClient } from '@1sat/client'
-import { ONESAT_MAINNET_URL } from '@1sat/types'
-import { PrivateKey, Utils } from '@bsv/sdk'
+import { inscribe, createContext } from '@1sat/actions'
+import { createRemoteWallet } from '@1sat/wallet-remote'
 import { readFile } from 'fs/promises'
 import { basename, extname } from 'path'
 
-const { toArray, toBase64 } = Utils
+const REMOTE_STORAGE_URL = 'https://1sat.shruggr.cloud/1sat/wallet'
 
-// Get content type from file extension
 function getContentType(filePath: string): string {
   const ext = extname(filePath).toLowerCase()
   const types: Record<string, string> = {
@@ -34,110 +31,64 @@ function getContentType(filePath: string): string {
 }
 
 async function main() {
-  const args = process.argv.slice(2)
+  const args = process.argv.slice(2).filter(a => a !== '--sigma')
+  const sigma = process.argv.includes('--sigma')
 
   if (args.length < 2) {
-    console.log('Usage: bun run mint.ts <wif> <file-path> [metadata-json]')
+    console.log('Usage: bun run mint.ts <wif> <file-path> [metadata-json] [--sigma]')
     console.log('')
     console.log('Examples:')
     console.log('  bun run mint.ts L1abc... image.png')
-    console.log('  bun run mint.ts L1abc... nft.jpg \'{"name":"My NFT","collection":"Test"}\'')
+    console.log('  bun run mint.ts L1abc... nft.jpg \'{"name":"My NFT"}\' --sigma')
     process.exit(1)
   }
 
   const [wifStr, filePath, metadataJson] = args
 
+  const { wallet, destroy } = await createRemoteWallet({
+    privateKey: wifStr,
+    chain: 'main',
+    remoteStorageUrl: REMOTE_STORAGE_URL,
+  })
+
   try {
-    // Setup keys
-    const privateKey = PrivateKey.fromWif(wifStr)
-    const address = privateKey.toAddress().toString()
-
-    console.log(`🔑 Minting from address: ${address}`)
-
-    // Read file
     const fileData = await readFile(filePath)
     const contentType = getContentType(filePath)
-    const dataB64 = toBase64(fileData)
+    const base64Content = fileData.toString('base64')
 
-    console.log(`📄 File: ${basename(filePath)} (${fileData.length} bytes, ${contentType})`)
+    console.log(`File: ${basename(filePath)} (${fileData.length} bytes, ${contentType})`)
 
-    // Parse metadata if provided
-    let metadata = null
+    let map: Record<string, string> | undefined
     if (metadataJson) {
       try {
-        metadata = JSON.parse(metadataJson)
-        console.log(`📋 Metadata:`, metadata)
+        map = JSON.parse(metadataJson)
       } catch (e) {
-        console.error('❌ Invalid metadata JSON:', e.message)
+        console.error('Invalid metadata JSON:', (e as Error).message)
         process.exit(1)
       }
     }
 
-    // Fetch UTXOs
-    console.log(`💰 Fetching UTXOs...`)
-    const utxos = await fetchPayUtxos(address)
-
-    if (!utxos || utxos.length === 0) {
-      console.error('❌ No UTXOs found. Please fund the wallet first.')
-      process.exit(1)
+    if (sigma) {
+      console.log('Signing with BAP identity (Sigma protocol)...')
     }
 
-    const balance = utxos.reduce((sum, utxo) => sum + utxo.satoshis, 0)
-    console.log(`💵 Balance: ${balance} satoshis`)
-
-    // Build inscription
-    const inscription: any = {
-      dataB64,
+    const ctx = createContext(wallet, { chain: 'main' })
+    const result = await inscribe.execute(ctx, {
+      base64Content,
       contentType,
-    }
-
-    // Add metadata if provided
-    if (metadata) {
-      inscription.metadata = metadata
-    }
-
-    // Create ordinal
-    console.log(`🔨 Creating ordinal inscription...`)
-    const result = await createOrdinals({
-      utxos,
-      destinations: [{
-        address,
-        inscription,
-      }],
-      paymentPk: privateKey,
-      changeAddress: address,
+      map,
+      signWithBAP: sigma || undefined,
     })
 
-    const txid = result.tx.id('hex')
-    console.log(`📝 Transaction created: ${txid}`)
-    console.log(`💸 Fee: ${result.fee} satoshis`)
-
-    // Broadcast
-    console.log(`📡 Broadcasting to network...`)
-    const arcade = new ArcadeClient(ONESAT_MAINNET_URL)
-    const broadcastResult = await arcade.submitTransactionHex(result.tx.toHex())
-
-    if (
-      broadcastResult.txStatus === 'MINED' ||
-      broadcastResult.txStatus === 'SEEN_ON_NETWORK' ||
-      broadcastResult.txStatus === 'ACCEPTED_BY_NETWORK' ||
-      broadcastResult.txStatus === 'IMMUTABLE'
-    ) {
-      console.log(`✅ Success! Transaction broadcast.`)
-      console.log(``)
-      console.log(`🆔 Ordinal ID: ${txid}_0`)
-      console.log(`🔗 Transaction: https://whatsonchain.com/tx/${txid}`)
-      console.log(`🛍️ Marketplace: https://ordinals.gorillapool.io/inscription?txid=${txid}`)
-      console.log(``)
-      console.log(`⏱️ Your ordinal will be viewable in ~10 minutes after confirmation.`)
+    if (result.txid) {
+      console.log(`Inscribed: ${result.txid}_0`)
+      console.log(`https://whatsonchain.com/tx/${result.txid}`)
     } else {
-      console.error(`❌ Broadcast failed:`, broadcastResult)
+      console.error('Error:', result.error)
       process.exit(1)
     }
-
-  } catch (error) {
-    console.error('❌ Error:', error.message || error)
-    process.exit(1)
+  } finally {
+    await destroy()
   }
 }
 

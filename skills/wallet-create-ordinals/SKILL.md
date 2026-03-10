@@ -45,7 +45,8 @@ const result = await inscribe.execute(ctx, {
     app: 'myapp',
     type: 'image',
     name: 'My NFT'
-  }
+  },
+  signWithBAP: true,                  // Optional: sign with BAP identity (Sigma protocol)
 })
 
 if (result.txid) {
@@ -53,6 +54,23 @@ if (result.txid) {
 } else {
   console.error('Error:', result.error)
 }
+```
+
+## Sigma-Signed Inscriptions
+
+Set `signWithBAP: true` to sign the inscription with the wallet's BAP identity using the Sigma protocol.
+
+This uses a two-transaction flow: an anchor transaction is created first (not broadcast), then the inscription transaction spends the anchor output, embedding a Sigma signature in the locking script. Both transactions are broadcast together atomically.
+
+The signature proves authorship and is verifiable on-chain using the `sigma-protocol` library.
+
+```typescript
+const result = await inscribe.execute(ctx, {
+  base64Content: fileB64,
+  contentType: 'image/png',
+  map: { app: 'myapp', name: 'Signed NFT' },
+  signWithBAP: true,
+})
 ```
 
 ## What Gets Created
