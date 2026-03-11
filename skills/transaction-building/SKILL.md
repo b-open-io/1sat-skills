@@ -151,26 +151,30 @@ const createResult = await wallet.createAction({
 })
 ```
 
-### Phase 2: signAction (provide unlocking scripts)
+### Phase 2: completeSignedAction (sign and finalize)
+
+Use the `completeSignedAction` helper for all two-phase actions. It handles BEEF merge (fixing stripped merkle proofs), script verification, `signAction`, and automatic `abortAction` on failure.
 
 ```typescript
-// Get the signable transaction
-const tx = Transaction.fromBEEF(createResult.signableTransaction.tx)
+import { completeSignedAction } from '@1sat/actions'
 
-// Build custom unlocking scripts per input
-const spends = {
-  0: { unlockingScript: myUnlockingScript.toHex() },
-}
+const result = await completeSignedAction(
+  wallet,
+  createResult,           // from createAction with signAndProcess: false
+  inputBEEF as number[],  // BEEF from listOutputs (has full SPV proof chain)
+  async (tx) => {
+    // tx is a fully-wired Transaction ready for signing
+    // Return unlocking scripts keyed by input index
+    const spends: Record<number, { unlockingScript: string }> = {}
+    spends[0] = { unlockingScript: myUnlockingScript.toHex() }
+    return spends
+  },
+)
 
-// Complete the transaction
-const signResult = await wallet.signAction({
-  reference: createResult.signableTransaction.reference,
-  spends,
-  options: { acceptDelayedBroadcast: false },
-})
-
-// signResult.txid is the broadcast transaction ID
+// result.txid is the broadcast transaction ID
 ```
+
+**Why not raw `signAction`?** The signable transaction BEEF from `createAction` has merkle proofs stripped (wallet-toolbox uses `mergeRawTx` internally). `completeSignedAction` merges the unsigned tx back into `inputBEEF` to reconstruct the full proof chain before signing. It also verifies unlocking scripts against locking scripts before submitting, and aborts the action automatically if signing fails.
 
 ## Action Registry
 

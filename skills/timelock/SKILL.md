@@ -89,10 +89,46 @@ if (result.txid) {
 1. Lists all outputs in the `locks` basket
 2. Checks each lock's `until:` tag against current block height
 3. Filters to only matured locks (until <= currentHeight)
-4. Builds a transaction with `lockTime` set to the max `until` value
-5. Sets input sequence numbers to 0 (required for nLockTime)
-6. Signs each input with the lock key using SIGHASH_ALL|ANYONECANPAY
-7. Includes the sighash preimage in the unlocking script
+4. Calls `createAction` with `signAndProcess: false` to build the unsigned transaction
+5. Calls `completeSignedAction` which handles BEEF merge, signing, script verification, `signAction`, and abort on failure
+6. The signing callback uses `Lock.unlockWithWallet` per input
+
+### completeSignedAction Pattern
+
+All two-phase unlock operations use the `completeSignedAction` helper:
+
+```typescript
+import { completeSignedAction } from '@1sat/actions'
+import { Lock } from '@bopen-io/templates'
+
+const result = await completeSignedAction(
+  ctx.wallet,
+  createResult,
+  inputBEEF as number[],
+  async (tx) => {
+    const spends: Record<number, { unlockingScript: string }> = {}
+    for (let i = 0; i < maturedLocks.length; i++) {
+      const lock = maturedLocks[i]
+      const unlocker = Lock.unlockWithWallet(
+        ctx.wallet,
+        lock.protocolID,
+        lock.keyID,
+        'self',
+      )
+      const unlockingScript = await unlocker.sign(tx, i)
+      spends[i] = { unlockingScript: unlockingScript.toHex() }
+    }
+    return spends
+  },
+)
+```
+
+The helper handles:
+- Merging the signable transaction BEEF with `inputBEEF` (fixes stripped merkle proofs)
+- Calling the signing callback with a fully-wired `Transaction`
+- Verifying unlocking scripts against locking scripts before submitting
+- Calling `signAction` to finalize
+- Calling `abortAction` automatically on failure
 
 ## How the Lock Script Works
 
@@ -104,9 +140,16 @@ The lock script combines a CLTV (CheckLockTimeVerify) check with a P2PKH signatu
 
 To unlock:
 - Transaction `nLockTime` must be >= the lock's block height
-- Input sequence must be 0 (enables nLockTime checking)
+- Input `sequenceNumber` must be 0 (enables nLockTime checking)
 - Valid signature from the lock key
 - Sighash preimage for script verification
+
+### Lock Input Parameters
+
+When building `createAction` inputs for lock outputs:
+- `unlockingScriptLength: 1205` (accounts for DER signature variability)
+- `sequenceNumber: 0` (required for nLockTime)
+- `anyoneCanPay` must be `false` (the default)
 
 ## Lock Storage
 
