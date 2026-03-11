@@ -57,10 +57,9 @@ if (!opnsOrdinal || !BEEF) {
   throw new Error('No OpNS name found in wallet')
 }
 
-// 3. Register identity key
+// 3. Register identity key — inputBEEF is optional (auto-resolved from wallet)
 const result = await opnsRegister.execute(ctx, {
   ordinal: opnsOrdinal,
-  inputBEEF: Array.from(BEEF),
 })
 
 if (result.txid) {
@@ -94,9 +93,9 @@ const opnsOrdinal = outputs.find(o =>
   o.tags?.some(t => t === 'opns:published')
 )
 
+// inputBEEF is optional — auto-resolved from wallet via ID tag
 const result = await opnsDeregister.execute(ctx, {
   ordinal: opnsOrdinal,
-  inputBEEF: Array.from(BEEF),
 })
 ```
 

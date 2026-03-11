@@ -19,6 +19,13 @@ List, purchase, and cancel ordinal listings using `@1sat/actions` and the OrdLoc
 | `purchaseOrdinal` | Purchase a listed ordinal |
 | `deriveCancelAddress` | Get the cancel address for a listing |
 
+## inputBEEF: When Required vs Optional
+
+`inputBEEF` provides the SPV proof chain for the inputs being spent. Whether it's required depends on who owns the input:
+
+- **Optional** for inputs from your own wallet — the action auto-resolves BEEF via the output's ID tag (`listOutputs` with tag filter). Transfer, list, and cancel all work without passing `inputBEEF` when the ordinal is in your wallet.
+- **Required** for external inputs not in your wallet — e.g. purchasing a listing from another user or a marketplace. The buyer's wallet has no BEEF for the seller's ordlock UTXO, so the marketplace/overlay must provide it.
+
 ## Get Ordinals from Wallet
 
 ```typescript
@@ -48,12 +55,11 @@ const ctx = createContext(wallet, { services })
 const { outputs, BEEF } = await getOrdinals.execute(ctx, {})
 const ordinal = outputs[0]
 
-// 2. Transfer to counterparty (by identity key — preferred)
+// 2. Transfer — inputBEEF is optional (auto-resolved from wallet via ID tag)
 const result = await transferOrdinals.execute(ctx, {
   transfers: [
     { ordinal, counterparty: '02abc...' },
   ],
-  inputBEEF: Array.from(BEEF),
 })
 
 // Or transfer by address (external — not tracked in recipient's wallet)
@@ -61,7 +67,6 @@ const result2 = await transferOrdinals.execute(ctx, {
   transfers: [
     { ordinal, address: '1Recipient...' },
   ],
-  inputBEEF: Array.from(BEEF),
 })
 
 // Batch transfer multiple ordinals
@@ -70,7 +75,6 @@ const result3 = await transferOrdinals.execute(ctx, {
     { ordinal: outputs[0], counterparty: '02abc...' },
     { ordinal: outputs[1], address: '1Bob...' },
   ],
-  inputBEEF: Array.from(BEEF),
 })
 ```
 
@@ -85,10 +89,9 @@ const ctx = createContext(wallet, { services })
 const { outputs, BEEF } = await getOrdinals.execute(ctx, {})
 const ordinal = outputs[0]
 
-// 2. List for sale
+// 2. List for sale — inputBEEF is optional (auto-resolved from wallet)
 const result = await listOrdinal.execute(ctx, {
   ordinal,
-  inputBEEF: Array.from(BEEF),
   price: 100000,  // Price in satoshis
   payAddress: '1YourPaymentAddress...',
 })
@@ -136,17 +139,21 @@ if (result.txid) {
 ## Cancel a Listing
 
 ```typescript
-import { cancelListing, getOrdinals, createContext } from '@1sat/actions'
+import { cancelListing, createContext } from '@1sat/actions'
 
 const ctx = createContext(wallet, { services })
 
-const { outputs, BEEF } = await getOrdinals.execute(ctx, {})
-const listedOrdinal = outputs.find(o => o.tags?.includes('ordlock'))
-
-const result = await cancelListing.execute(ctx, {
-  ordinal: listedOrdinal,
-  inputBEEF: Array.from(BEEF),
+// Get the listed ordinal from wallet — filter by 'ordlock' tag
+const { outputs } = await ctx.wallet.listOutputs({
+  basket: '1sat',
+  includeTags: true,
+  includeCustomInstructions: true,
+  tagsJSON: JSON.stringify(['ordlock']),
 })
+const listing = outputs[0]
+
+// Cancel — inputBEEF is optional (auto-resolved from wallet via ID tag)
+const result = await cancelListing.execute(ctx, { listing })
 
 if (result.txid) {
   console.log('Cancelled! txid:', result.txid)
@@ -155,8 +162,8 @@ if (result.txid) {
 
 ### How Cancel Works
 
-1. Derives the cancel key using the ordinal's custom instructions
-2. Signs the OrdLock input with the cancel key
+1. Derives the cancel key using the listing's custom instructions
+2. Signs the OrdLock input using `OrdLock.cancelWithWallet` from `@bopen-io/templates`
 3. Transfers the ordinal back to the wallet (removes `ordlock` tag)
 4. Submits to overlay to clear the listing
 

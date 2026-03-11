@@ -123,14 +123,21 @@ const result = await signBsm.execute(ctx, {
 
 ## The Two-Phase Signing Pattern
 
-For operations involving custom scripts (ordinals, locks, tokens), the SDK uses a two-phase approach:
+For operations involving custom scripts (ordinals, locks, tokens), the SDK uses a two-phase approach.
+
+### inputBEEF: When Required vs Optional
+
+`inputBEEF` provides the SPV proof chain for the inputs being spent:
+
+- **Optional** for inputs from your own wallet — actions auto-resolve BEEF via the output's ID tag.
+- **Required** for external inputs not in your wallet — e.g. purchasing a listing from another user. The buyer's wallet has no BEEF for the seller's ordlock UTXO, so the marketplace/overlay must provide it.
 
 ### Phase 1: createAction (build the transaction)
 
 ```typescript
 const createResult = await wallet.createAction({
   description: 'Transfer ordinal',
-  inputBEEF: beefData,          // BEEF containing source transactions
+  inputBEEF: beefData,          // Optional for wallet-owned inputs, required for external inputs
   inputs: [{
     outpoint: 'txid.vout',
     inputDescription: 'Ordinal to transfer',

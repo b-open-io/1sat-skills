@@ -132,16 +132,14 @@ const result = await inscribe.execute(ctx, {
 // Get ordinals from wallet
 const { outputs, BEEF } = await getOrdinals.execute(ctx, { limit: 100 })
 
-// Transfer ordinal
+// Transfer ordinal — inputBEEF optional for wallet-owned outputs
 const result = await transferOrdinals.execute(ctx, {
   transfers: [{ ordinal: outputs[0], address: recipientAddress }],
-  inputBEEF: BEEF
 })
 
-// List for sale
+// List for sale — inputBEEF optional for wallet-owned outputs
 const result = await listOrdinal.execute(ctx, {
   ordinal: outputs[0],
-  inputBEEF: BEEF,
   price: 100000, // satoshis
   payAddress: '1A1zP1...'
 })
