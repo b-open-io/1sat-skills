@@ -118,6 +118,28 @@ Inscription cost depends on file size:
 - Fee rate is configurable via `satsPerKb` (default varies)
 - Larger files = higher cost
 
+## Identity & Provenance
+
+### AIP Signatures for Authorship
+
+Ordinals can include AIP (Author Identity Protocol) signatures to prove authorship via BAP identity. The AIP signature links the ordinal to the creator's BAP identity key — verifiable by anyone on-chain.
+
+```
+OP_RETURN | <inscription data> | "|" | AIP_PREFIX | "BITCOIN_ECDSA" | <signing_address> | <signature>
+```
+
+The signing address resolves to a BAP identity via the overlay, establishing provenance.
+
+### NFTs as Subscription Tokens
+
+Ordinals with specific origin txids can serve as subscription NFTs for Sigma Identity:
+- The **origin txid** of the NFT determines the subscription tier (Free/Plus/Pro)
+- Sigma queries 1sat-stack for NFTs owned by connected wallets
+- Origin matching against tier config grants access to features
+- This enables transferable, resalable subscriptions via ordinal ownership
+
+When minting subscription NFTs, ensure the collection's origin txid is registered in the Sigma subscription config.
+
 ## Output
 
 Returns:

@@ -75,6 +75,48 @@ General transaction building, batch payments, OP_RETURN, signing, action registr
 - **When**: User needs to send BSV, build custom transactions, sign messages, or use the action system
 - **Actions**: `sendBsv`, `sendAllBsv`, `signBsm` + two-phase signing pattern
 
+## Identity & Ordinals Integration
+
+### BAP Identity Actions via @1sat/actions
+
+BRC-100 wallets can publish and manage BAP identities directly via actions:
+
+```typescript
+import { publishIdentity, updateProfile, getProfile, attest, createContext } from '@1sat/actions'
+
+const ctx = createContext({ wallet, chain: 'main' })
+
+// Publish BAP identity (pre-signed by root key, wallet funds it)
+await publishIdentity.execute(ctx, { signedScript: signedScript.toHex() })
+
+// Update on-chain profile (BAP ALIAS)
+await updateProfile.execute(ctx, { profile: { name: 'Alice', description: '...' } })
+
+// Attest an attribute hash on-chain
+await attest.execute(ctx, { attestationHash: 'sha256-of-urn', counter: '0' })
+```
+
+### AIP Signatures on Ordinals
+
+AIP (Author Identity Protocol) signatures prove authorship of ordinals via BAP identity. When inscribing, the AIP signature links the ordinal to the creator's BAP identity key — verifiable by anyone on-chain. This is how ordinals get provenance.
+
+### NFT Subscription Tiers (Sigma Identity)
+
+Specific NFT origins map to Sigma Identity subscription tiers:
+- **Free**: No NFT required
+- **Plus**: NFT with specific origin txid (configurable per deployment)
+- **Pro**: NFT with different origin txid
+
+When minting ordinals that serve as subscription NFTs, the origin txid determines the tier. Sigma queries Gorilla Pool / 1sat-stack for NFTs owned by connected wallets, checks origins against the tier config, and grants access accordingly. Results cached in Vercel KV (1hr TTL).
+
+### Agent Identity
+
+AI agents can have BAP identities via the OAuth device authorization flow (RFC 8628). An agent with a BAP identity can autonomously mint ordinals, manage marketplace listings, and sign transactions — with trust levels governed by ClawNet scoring.
+
+### BRC-68 Trust Anchor
+
+Sigma Identity publishes a BRC-68 trust anchor at `sigmaidentity.com/manifest.json` with its certifier pubkey. Any BRC-100 wallet can discover Sigma as a recognized identity certifier.
+
 ## Cross-Ecosystem Skills
 
 For capabilities beyond ordinals/tokens, reference these skills from other plugins:
@@ -84,6 +126,7 @@ For capabilities beyond ordinals/tokens, reference these skills from other plugi
 - **Message signing (BSM)**: `bsv-skills:message-signing`
 - **ORDFS content access**: `bsv-skills:ordfs`
 - **Sigma Identity auth**: `sigma-auth:setup-nextjs`, `sigma-auth:setup-convex`
+- **Device auth for agents**: `sigma-auth:device-authorization`
 
 ## Libraries
 
