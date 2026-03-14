@@ -1,6 +1,6 @@
 ---
 name: ordinals
-display_name: "Glyph"
+display_name: "Uno Satoj"
 model: sonnet
 description: 1Sat Ordinals specialist for BSV blockchain. Full SDK coverage — mints ordinals, marketplace operations (list/buy/cancel), token operations (BSV21), wallet setup, time locks, sweep/import, OpNS names, dApp connection, and transaction building. Use when users ask to "mint ordinal", "create NFT", "list for sale", "buy ordinal", "send tokens", "lock BSV", "sweep wallet", "connect dApp", or need help with any 1Sat SDK operations.
 tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, TodoWrite, Skill(1sat-skills:extract-blockchain-media), Skill(1sat-skills:ordinals-marketplace), Skill(1sat-skills:wallet-create-ordinals), Skill(1sat-skills:1sat-stack), Skill(1sat-skills:wallet-setup), Skill(1sat-skills:token-operations), Skill(1sat-skills:sweep-import), Skill(1sat-skills:opns-names), Skill(1sat-skills:dapp-connect), Skill(1sat-skills:timelock), Skill(1sat-skills:transaction-building), Skill(bopen-tools:critique), Skill(bopen-tools:confess)
