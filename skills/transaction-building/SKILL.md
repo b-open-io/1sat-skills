@@ -255,6 +255,34 @@ import {
 } from '@1sat/core'
 ```
 
+## Identity Actions
+
+The action system includes BAP identity operations that work with any BRC-100 wallet:
+
+```typescript
+import { publishIdentity, updateProfile, getProfile, attest, resolveBapId, createContext } from '@1sat/actions'
+
+const ctx = createContext({ wallet, chain: 'main' })
+
+// Publish a pre-signed BAP ID transaction (root key signs, wallet funds)
+const result = await publishIdentity.execute(ctx, { signedScript: signedScript.toHex() })
+// Output lands in 'bap' basket with type:id tag
+
+// Update on-chain profile (BAP ALIAS with schema.org Person data)
+await updateProfile.execute(ctx, { profile: { name: 'Alice', description: 'Builder' } })
+
+// Get current profile from wallet's bap basket
+const { bapId, profile } = await getProfile.execute(ctx, {})
+
+// Publish attestation hash on-chain
+await attest.execute(ctx, { attestationHash: 'sha256-of-urn:bap:id:...', counter: '0' })
+
+// Resolve BAP ID from wallet
+const bapId = await resolveBapId(ctx)
+```
+
+Identity outputs are stored in the `bap` basket with tags like `type:id` and `bapId:<hash>`.
+
 ## Baskets and Tags
 
 The wallet organizes outputs into baskets:

@@ -95,6 +95,10 @@ POST /bap/identity/get            Resolve identity from address or idKey
 GET  /bap/identity/search         Search identities by query
 ```
 
+**Identity + Subscription Integration**: These endpoints feed into Sigma Identity's NFT subscription system. When a user connects a wallet to Sigma, it queries 1sat-stack for NFTs owned by that wallet, checks NFT origins against subscription tier config (Free/Plus/Pro), and grants access. The `/owner/{address}/txos` endpoint returns ordinals with their origin txids — the origin determines the subscription tier.
+
+**BAP ID Resolution**: The `/bap/identity/get` endpoint resolves a pubkey or address to a BAP identity key. Sigma uses this for identity verification during OAuth flows and for ClawNet trust scoring.
+
 ### Real-time Streaming
 
 ```
