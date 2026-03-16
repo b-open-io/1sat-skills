@@ -27,6 +27,7 @@ bunx skills add b-open-io/1sat-skills --skill ordinals-marketplace
 | `timelock` | Lock and unlock BSV with block height conditions |
 | `transaction-building` | General tx building, batch payments, OP_RETURN data, signing |
 | `ordinals-marketplace` | Browse, list, purchase, and cancel ordinal listings |
+| `1sat-cli` | CLI tool for all 1Sat operations from the terminal |
 | `extract-blockchain-media` | Extract media files from blockchain transactions |
 
 ## Prerequisites
@@ -34,6 +35,9 @@ bunx skills add b-open-io/1sat-skills --skill ordinals-marketplace
 **CLI Tools**
 
 ```bash
+# Install 1sat CLI for terminal operations
+bun add -g @1sat/cli
+
 # Install txex globally for media extraction
 bun add -g txex
 ```
@@ -42,7 +46,7 @@ bun add -g txex
 
 ```bash
 # For ordinals operations
-bun add @1sat/core @1sat/client @1sat/types @bsv/sdk
+bun add @1sat/core @1sat/client @1sat/templates @1sat/types @bsv/sdk
 
 # For browser dApps (optional)
 bun add @1sat/connect

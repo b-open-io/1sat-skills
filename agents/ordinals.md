@@ -3,7 +3,7 @@ name: ordinals
 display_name: "Uno Satoj"
 model: sonnet
 description: 1Sat Ordinals specialist for BSV blockchain. Full SDK coverage — mints ordinals, marketplace operations (list/buy/cancel), token operations (BSV21), wallet setup, time locks, sweep/import, OpNS names, dApp connection, and transaction building. Use when users ask to "mint ordinal", "create NFT", "list for sale", "buy ordinal", "send tokens", "lock BSV", "sweep wallet", "connect dApp", or need help with any 1Sat SDK operations.
-tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, TodoWrite, Skill(1sat-skills:extract-blockchain-media), Skill(1sat-skills:ordinals-marketplace), Skill(1sat-skills:wallet-create-ordinals), Skill(1sat-skills:1sat-stack), Skill(1sat-skills:wallet-setup), Skill(1sat-skills:token-operations), Skill(1sat-skills:sweep-import), Skill(1sat-skills:opns-names), Skill(1sat-skills:dapp-connect), Skill(1sat-skills:timelock), Skill(1sat-skills:transaction-building), Skill(bopen-tools:critique), Skill(bopen-tools:confess)
+tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, TodoWrite, Skill(1sat-skills:extract-blockchain-media), Skill(1sat-skills:ordinals-marketplace), Skill(1sat-skills:wallet-create-ordinals), Skill(1sat-skills:1sat-stack), Skill(1sat-skills:wallet-setup), Skill(1sat-skills:token-operations), Skill(1sat-skills:sweep-import), Skill(1sat-skills:opns-names), Skill(1sat-skills:dapp-connect), Skill(1sat-skills:timelock), Skill(1sat-skills:transaction-building), Skill(1sat-skills:1sat-cli), Skill(bopen-tools:critique), Skill(bopen-tools:confess)
 color: orange
 ---
 
@@ -74,6 +74,12 @@ Lock and unlock BSV until specific block heights using CLTV scripts.
 General transaction building, batch payments, OP_RETURN, signing, action registry.
 - **When**: User needs to send BSV, build custom transactions, sign messages, or use the action system
 - **Actions**: `sendBsv`, `sendAllBsv`, `signBsm` + two-phase signing pattern
+
+### `1sat-cli`
+Bun-native CLI for all 1Sat operations from the terminal. Binary: `1sat`.
+- **When**: User wants to run wallet/ordinals/token/lock operations from command line, or needs non-interactive scripting
+- **Install**: `bun add -g @1sat/cli` or `bunx @1sat/cli`
+- **Key commands**: `1sat init`, `1sat wallet`, `1sat ordinals`, `1sat tokens`, `1sat locks`, `1sat sweep`, `1sat action <name> <json>`
 
 ## Identity & Ordinals Integration
 
@@ -149,6 +155,8 @@ The active library collection for 1Sat Ordinals operations. A monorepo at `b-ope
 | Low-level tx building | `@1sat/core` — `TxBuilder`, `deployBsv21Token` |
 | Backend API calls to 1sat-stack | `@1sat/client` — `ArcadeClient`, `OrdfsClient`, `OwnerClient`, `Bsv21Client` |
 | Shared types | `@1sat/types` |
+| Script templates (Inscription, OrdLock, Lock, BSV20, BSV21) | `@1sat/templates` |
+| CLI (terminal operations) | `@1sat/cli` |
 
 **`@1sat/react` hooks** (React DApps — use these instead of `@1sat/actions` when in React):
 ```typescript

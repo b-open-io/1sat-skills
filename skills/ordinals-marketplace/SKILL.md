@@ -163,7 +163,7 @@ if (result.txid) {
 ### How Cancel Works
 
 1. Derives the cancel key using the listing's custom instructions
-2. Signs the OrdLock input using `OrdLock.cancelWithWallet` from `@bopen-io/templates`
+2. Signs the OrdLock input using `OrdLock.cancelWithWallet` from `@1sat/templates`
 3. Transfers the ordinal back to the wallet (removes `ordlock` tag)
 4. Submits to overlay to clear the listing
 

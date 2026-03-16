@@ -221,3 +221,20 @@ bun add @1sat/wallet-remote  # Remote (thin client)
 ```
 
 All environment packages depend on `@1sat/wallet` (core) which provides indexers, backup, and address sync.
+
+## Alternative: CLI Setup
+
+For quick wallet setup without writing code, use `@1sat/cli`:
+
+```bash
+# Install globally
+bun add -g @1sat/cli
+
+# Interactive wallet initialization
+1sat init
+
+# Or run directly without installing
+bunx @1sat/cli init
+```
+
+The CLI stores configuration in `~/.1sat/` and supports key management via `PRIVATE_KEY_WIF` env var or encrypted keystore at `~/.1sat/keys.bep`. See the `1sat-cli` skill for full CLI documentation.

@@ -99,7 +99,7 @@ All two-phase unlock operations use the `completeSignedAction` helper:
 
 ```typescript
 import { completeSignedAction } from '@1sat/actions'
-import { Lock } from '@bopen-io/templates'
+import { Lock } from '@1sat/templates'
 
 const result = await completeSignedAction(
   ctx.wallet,

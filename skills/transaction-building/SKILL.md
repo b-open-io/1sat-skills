@@ -246,14 +246,15 @@ import {
   createSigma, signData,
   // MAP protocol (metadata)
   buildMapScript, createMap, isValidMap,
-  // Inscription envelope
-  buildInscriptionEnvelope, createInscription,
-  // OrdP2PKH template
-  createOrdP2PKHScript, OrdP2PKH,
-  // OrdLock template (marketplace listings)
-  createOrdLockScript, OrdLock,
 } from '@1sat/core'
+
+// Script template classes (locking scripts, inscriptions, marketplace)
+import {
+  Inscription, OrdP2PKH, OrdLock, Lock, BSV20, BSV21,
+} from '@1sat/templates'
 ```
+
+`@1sat/templates` provides the script template classes for all 1Sat protocols (Inscription, OrdP2PKH, OrdLock, Lock, BSV20, BSV21). These are also re-exported by `@1sat/core` for convenience.
 
 ## Identity Actions
 
