@@ -7,31 +7,34 @@ description: "This skill should be used when working with the 1Sat CLI tool for 
 
 Bun-native command-line interface for 1Sat Ordinals and BSV operations. Binary name: `1sat`.
 
-## Installation
+## Usage
 
 ```bash
-# Install globally
-bun add -g @1sat/cli
-
-# Or run directly without installing
+# Run any command directly — no install needed
 bunx @1sat/cli <command>
+
+# Optional: install globally for frequent use
+bun add -g @1sat/cli
+# Then use the short form: 1sat <command>
 ```
 
 ## Quick Start
 
 ```bash
 # Initialize wallet and configuration
-1sat init
+bunx @1sat/cli init
 
 # Check wallet balance
-1sat wallet balance
+bunx @1sat/cli wallet balance
 
 # List ordinals in wallet
-1sat ordinals list
+bunx @1sat/cli ordinals list
 
 # Send BSV
-1sat wallet send --to 1Address... --amount 50000
+bunx @1sat/cli wallet send --to 1Address... --amount 50000
 ```
+
+> If installed globally (`bun add -g @1sat/cli`), replace `bunx @1sat/cli` with just `1sat`.
 
 ## Configuration
 
@@ -43,88 +46,90 @@ Keys can be provided in three ways:
 
 1. **Secure Enclave** (macOS arm64): Hardware-protected via `@1sat/vault` — keys encrypted with SE P-256 key, decryption requires Touch ID. Used by `bap touchid enable` and `clawnet setup-key`.
 2. **Environment variable**: Set `PRIVATE_KEY_WIF` with your WIF private key
-3. **Encrypted keystore**: Stored at `~/.1sat/keys.bep` (created during `1sat init`)
+3. **Encrypted keystore**: Stored at `~/.1sat/keys.bep` (created during `bunx @1sat/cli init`)
 
 ```bash
 # Using env var
-PRIVATE_KEY_WIF=L1abc... 1sat wallet balance
+PRIVATE_KEY_WIF=L1abc... bunx @1sat/cli wallet balance
 
 # Using encrypted keystore (created by init)
-1sat init
-1sat wallet balance
+bunx @1sat/cli init
+bunx @1sat/cli wallet balance
 ```
 
 ## Commands
 
+> All examples below use `bunx @1sat/cli`. If installed globally, use `1sat` instead.
+
 ### Wallet
 
 ```bash
-1sat wallet balance              # Show BSV balance
-1sat wallet send                 # Send BSV to address
-1sat wallet send-all             # Send entire balance
-1sat wallet utxos                # List payment UTXOs
+bunx @1sat/cli wallet balance              # Show BSV balance
+bunx @1sat/cli wallet send                 # Send BSV to address
+bunx @1sat/cli wallet send-all             # Send entire balance
+bunx @1sat/cli wallet utxos                # List payment UTXOs
 ```
 
 ### Ordinals
 
 ```bash
-1sat ordinals list               # List ordinals in wallet
-1sat ordinals inscribe           # Inscribe a file as ordinal
-1sat ordinals transfer           # Transfer ordinal to recipient
+bunx @1sat/cli ordinals list               # List ordinals in wallet
+bunx @1sat/cli ordinals inscribe           # Inscribe a file as ordinal
+bunx @1sat/cli ordinals transfer           # Transfer ordinal to recipient
 ```
 
 ### Marketplace (OrdLock)
 
 ```bash
-1sat ordinals list-for-sale      # List ordinal for sale
-1sat ordinals cancel-listing     # Cancel an active listing
-1sat ordinals purchase           # Purchase a listed ordinal
+bunx @1sat/cli ordinals list-for-sale      # List ordinal for sale
+bunx @1sat/cli ordinals cancel-listing     # Cancel an active listing
+bunx @1sat/cli ordinals purchase           # Purchase a listed ordinal
 ```
 
 ### Tokens (BSV21)
 
 ```bash
-1sat tokens balances             # Show all token balances
-1sat tokens list                 # List token UTXOs
-1sat tokens send                 # Send tokens to recipient
+bunx @1sat/cli tokens balances             # Show all token balances
+bunx @1sat/cli tokens list                 # List token UTXOs
+bunx @1sat/cli tokens send                 # Send tokens to recipient
 ```
 
 ### Locks (Timelock)
 
 ```bash
-1sat locks status                # Show lock summary
-1sat locks create                # Lock BSV until block height
-1sat locks unlock                # Unlock all matured locks
+bunx @1sat/cli locks status                # Show lock summary
+bunx @1sat/cli locks create                # Lock BSV until block height
+bunx @1sat/cli locks unlock                # Unlock all matured locks
 ```
 
 ### Identity (BAP)
 
 ```bash
-1sat identity publish            # Publish BAP identity
-1sat identity profile            # View/update profile
-1sat identity attest             # Publish attestation
+bunx @1sat/cli identity publish            # Publish BAP identity
+bunx @1sat/cli identity profile            # View/update profile
+bunx @1sat/cli identity attest             # Publish attestation
 ```
 
 ### Social (BSocial)
 
 ```bash
-1sat social post                 # Create a social post
-1sat social search               # Search posts
+bunx @1sat/cli social post                 # Create a social post
+bunx @1sat/cli social search               # Search posts
 ```
 
 ### OpNS Names
 
 ```bash
-1sat opns register               # Register identity on OpNS name
-1sat opns deregister             # Remove identity binding
+bunx @1sat/cli opns register               # Register identity on OpNS name
+bunx @1sat/cli opns deregister             # Remove identity binding
 ```
 
 ### Sweep / Import
 
 ```bash
-1sat sweep bsv                   # Sweep BSV from external WIF
-1sat sweep ordinals              # Sweep ordinals from external WIF
-1sat sweep tokens                # Sweep BSV21 tokens from external WIF
+bunx @1sat/cli sweep bsv                   # Sweep BSV from external WIF
+bunx @1sat/cli sweep ordinals              # Sweep ordinals from external WIF
+bunx @1sat/cli sweep tokens                # Sweep BSV21 tokens from external WIF
 ```
 
 ### Action Escape Hatch
@@ -133,12 +138,12 @@ Any registered action can be invoked directly by name with a JSON input:
 
 ```bash
 # Run any action from the action registry
-1sat action <name> <json>
+bunx @1sat/cli action <name> <json>
 
 # Examples
-1sat action sendBsv '{"requests":[{"address":"1A...","satoshis":5000}]}'
-1sat action lockBsv '{"requests":[{"satoshis":10000,"until":900000}]}'
-1sat action inscribe '{"base64Content":"SGVsbG8=","contentType":"text/plain"}'
+bunx @1sat/cli action sendBsv '{"requests":[{"address":"1A...","satoshis":5000}]}'
+bunx @1sat/cli action lockBsv '{"requests":[{"satoshis":10000,"until":900000}]}'
+bunx @1sat/cli action inscribe '{"base64Content":"SGVsbG8=","contentType":"text/plain"}'
 ```
 
 This is the escape hatch for any operation supported by the `@1sat/actions` registry, even those without dedicated CLI subcommands.
@@ -147,19 +152,19 @@ This is the escape hatch for any operation supported by the `@1sat/actions` regi
 
 ```bash
 # JSON output (for scripting/piping)
-1sat wallet balance --json
+bunx @1sat/cli wallet balance --json
 
 # Quiet mode (minimal output)
-1sat wallet send --to 1A... --amount 5000 --quiet
+bunx @1sat/cli wallet send --to 1A... --amount 5000 --quiet
 
 # Auto-confirm prompts (non-interactive)
-1sat wallet send --to 1A... --amount 5000 --yes
+bunx @1sat/cli wallet send --to 1A... --amount 5000 --yes
 ```
 
 ## Init Flow
 
 ```bash
-1sat init
+bunx @1sat/cli init
 ```
 
 The init command:
@@ -177,6 +182,10 @@ The init command:
 ## Package
 
 ```bash
+# Run without installing
+bunx @1sat/cli
+
+# Or install globally
 bun add -g @1sat/cli
 ```
 

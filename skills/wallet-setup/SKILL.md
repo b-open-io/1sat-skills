@@ -251,19 +251,18 @@ if (await isSupported()) {
 - **No entitlements, no code signing, no .app bundle needed**
 - Used by BAP CLI (`bap touchid enable`) and ClawNet CLI (`clawnet setup-key`)
 
+
 ## Alternative: CLI Setup
 
 For quick wallet setup without writing code, use `@1sat/cli`:
 
 ```bash
-# Install globally
-bun add -g @1sat/cli
-
-# Interactive wallet initialization
-1sat init
-
-# Or run directly without installing
+# Run directly — no install needed
 bunx @1sat/cli init
+
+# Optional: install globally for frequent use
+bun add -g @1sat/cli
+# Then use the short form: 1sat init
 ```
 
 The CLI stores configuration in `~/.1sat/` and supports key management via `PRIVATE_KEY_WIF` env var or encrypted keystore at `~/.1sat/keys.bep`. See the `1sat-cli` skill for full CLI documentation.
