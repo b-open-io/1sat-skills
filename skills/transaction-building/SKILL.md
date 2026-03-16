@@ -212,6 +212,8 @@ const tools = actionRegistry.toMcpTools()
 | `inscriptions` | `inscribe` |
 | `locks` | `getLockData`, `lockBsv`, `unlockBsv` |
 | `signing` | `signBsm` |
+| `social` | `createSocialPost` |
+| `identity` | `publishIdentity`, `attest`, `updateProfile`, `getProfile` |
 | `sweep` | `sweepBsv`, `sweepOrdinals`, `sweepBsv21` |
 | `opns` | `opnsRegister`, `opnsDeregister` |
 
@@ -261,6 +263,7 @@ The wallet organizes outputs into baskets:
 |--------|----------|
 | `ordinals` | Ordinal inscriptions (NFTs) |
 | `bsv21` | BSV-21 fungible tokens |
+| `bsocial` | Social protocol outputs (posts, likes, follows) |
 | `locks` | Time-locked BSV |
 | `opns` | OpNS name ordinals |
 
