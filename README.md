@@ -2,6 +2,8 @@
 
 # 1Sat Skills
 
+> **Moved**: This plugin now lives in [1sat-sdk](https://github.com/b-open-io/1sat-sdk). Install with `claude plugin install 1sat-skills@b-open-io` (automatically pulls from the SDK repo).
+
 1Sat ecosystem tools for Claude Code. Unified BSV indexing API, ordinals NFT operations, media extraction, and marketplace browsing.
 
 ## Installation
