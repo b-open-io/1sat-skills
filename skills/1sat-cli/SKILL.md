@@ -39,10 +39,11 @@ Config directory: `~/.1sat/`
 
 ### Key Management
 
-Keys can be provided in two ways:
+Keys can be provided in three ways:
 
-1. **Environment variable**: Set `PRIVATE_KEY_WIF` with your WIF private key
-2. **Encrypted keystore**: Stored at `~/.1sat/keys.bep` (created during `1sat init`)
+1. **Secure Enclave** (macOS arm64): Hardware-protected via `@1sat/vault` — keys encrypted with SE P-256 key, decryption requires Touch ID. Used by `bap touchid enable` and `clawnet setup-key`.
+2. **Environment variable**: Set `PRIVATE_KEY_WIF` with your WIF private key
+3. **Encrypted keystore**: Stored at `~/.1sat/keys.bep` (created during `1sat init`)
 
 ```bash
 # Using env var

@@ -222,6 +222,35 @@ bun add @1sat/wallet-remote  # Remote (thin client)
 
 All environment packages depend on `@1sat/wallet` (core) which provides indexers, backup, and address sync.
 
+## Hardware Key Protection: @1sat/vault
+
+On macOS arm64, private keys can be protected by the Secure Enclave via `@1sat/vault`. Keys are encrypted with a hardware-bound P-256 key (CryptoKit ECIES: ECDH + HKDF-SHA256 + AES-256-GCM) and never leave the chip. All decryption requires Touch ID via LAContext.
+
+```typescript
+import { protectSecret, unlockSecret, listSecrets, isSupported } from '@1sat/vault'
+
+// Check availability
+if (await isSupported()) {
+  // Encrypt and store a WIF key
+  await protectSecret('my-wallet-key', wifString)
+
+  // Retrieve (triggers Touch ID)
+  const wif = await unlockSecret('my-wallet-key')
+
+  // List stored secrets
+  const secrets = await listSecrets()
+
+  // Remove
+  await removeSecret('my-wallet-key')
+}
+```
+
+- **Package**: `@1sat/vault@0.0.1` (npm)
+- **Vault directory**: `~/.secure-enclave-vault/`
+- **Platform**: macOS arm64 only (fails informatively elsewhere)
+- **No entitlements, no code signing, no .app bundle needed**
+- Used by BAP CLI (`bap touchid enable`) and ClawNet CLI (`clawnet setup-key`)
+
 ## Alternative: CLI Setup
 
 For quick wallet setup without writing code, use `@1sat/cli`:
